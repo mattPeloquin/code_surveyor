@@ -1,12 +1,10 @@
 
 # Code Surveyor
-Code Surveyor is a regular expression framework for measuring and searching code files. 
-Metrics and scanning output is designed for easy spreadsheet and pivot table analysis.
+A customizable framework for measuring and searching code files.
+Provides metrics and scanning output for easy spreadsheet and pivot table analysis.
 
 ## Using Surveyor
-Surveyor will measure most code out of the box, but is designed for custom configuration (see Config Files below).
-
-Surveyor can run as an executeable or a Python 3 script. 
+Use Surveyor as an executeable or Python 3 script. 
 Either download the appropriate version from the "dist" folder or clone this repository.
 Below are some examples for running in different environments: 
 
@@ -14,9 +12,7 @@ Below are some examples for running in different environments:
     python surveyor.py     (Python in path, no .py association)
     surveyor.py            (Python and surveyor in path, .py runs)
 
-Each run walks the target folder tree searching for config
-file(s) named "surveyor.code". If no "surveyor.code" files are found
-the default config file is used (see below). 
+Surveyor measures most code out of the box, but works best with custom configuration (see Config Files below).
 All cores are used; use the "-w" option to modify. 
 
 Summary metrics are displayed on the console and detailed per-file metrics are in:
@@ -30,9 +26,10 @@ Surveyor measurement is driven by config files that define:
     - csmodules (Code Surveyor Modules) used to measure those files
     - Options to modify measurements or output
 
-The default "surveyor.code" config file should be located with Surveyor; see this
-and "surveyor.examples" for documentation and eamples on how to configure Surveyor.
+The default "surveyor.code" config file should be located with Surveyor; see this and "surveyor.examples" for documentation and eamples on how to configure Surveyor.
 
+Each run walks the target folder tree searching for config
+file(s). If no "surveyor.code" files are found the default config file is used.
 Customize folder tree measurement by placing "surveyor.code" files in folders with only the measures you care about for that folder and its children. 
 
 To exclude a folder branch, place an empty config at the top.

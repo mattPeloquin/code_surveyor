@@ -3,13 +3,13 @@
     csmodules -- Code Surveyor Modules
 
     The csmodule package is where Surveyor modules.py looks for measurement
-    modules referenced in config files. Modules leverage shared code 
+    modules referenced in config files. Modules leverage shared code
     through implementation inheritance:
 
-                 framework\basemodule.py
-                 /                    |     
-           NBNC.py    searchMixin.py  |     
-               |      /           \   |
+                  framework\basemodule.py
+                 /                    |  \__________
+           NBNC.py    searchMixin.py  |             |
+               |      /           \   |       custom non-code modules
                |     /          Search.py
              Code.py_____________________________
               |       |             |            |
@@ -21,7 +21,7 @@
       - csmodules are Surveyor plug-ins that support both configuration options
         and code modification/extension.
 
-      - csmodules inherit basic file handling implementation from 
+      - csmodules inherit basic file handling implementation from
         framework.basemodule. This isn't strictly necessary, as long
         as a csmodule replicates the appropriate interface.
 
