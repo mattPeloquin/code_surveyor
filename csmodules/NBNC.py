@@ -110,7 +110,7 @@ class NBNC( basemodule._BaseModule ):
         'STRINGS': (
             '''self.reStringLiteral = re.compile(optValue, self._reFlags)''',
             'Override the regex used to detect strings'),
-        'PYTHON': ("""
+        'PYTHON_TRIPLE_COMMENTS': ("""
 self._stripLineBeforeComments = False
 self.reSingleLineComments = re.compile('^\s*[#]', self._reFlags)
 self.reMultiLineCommentsOpen = re.compile(self.PYTHON_TRIPLE + self.REMAINING_LINE_APPEND, self._reFlags)
