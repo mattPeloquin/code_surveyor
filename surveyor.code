@@ -29,7 +29,7 @@
 # verb  module measures files                           tag1        tag2    tag3 / options/ Comments
 
 measure  Code   *       NO_EXT;*.sh;*.bat;*.cmd         shell       code    OPT:IGNORE_BINARY
-measure  Code   *       *.py;*.pyd;*.pyw                python      code    OPT:PYTHON  # Python triple quote support
+measure  Code   *       *.py;*.pyd;*.pyw                python      code    OPT:PYTHON_TRIPLE_COMMENTS
 measure  Code   *       *.c;*.cpp;*.cc;*.cxx            c_c++       code    definition
 measure  Code   *       *.h;*.hpp;*.hxx;*.hh            c_c++       code    declaration
 measure  Code   *       *.java                          java        code    java

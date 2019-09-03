@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 #---- Code Surveyor, Copyright 2019 Matt Peloquin, MIT License
 '''
@@ -31,7 +30,7 @@ if __name__ == '__main__':
         columns, _rows = shutil.get_terminal_size(fallback=(80, 24))
         printWidth = columns - 1 
 
-        # This is needed to support multiprocessing for Windows exe
+        # Support multiprocessing for Windows exe
         multiprocessing.freeze_support()
 
     except Exception:
