@@ -6,6 +6,8 @@
 
 import os
 
+from . surveyor_dir
+from . runtime_dir
 from framework import configentry
 from framework import configreader
 from framework import fileext
@@ -78,8 +80,8 @@ class ConfigStack( object ):
                 raise utils.ConfigError(uistrings.STR_ErrorConfigFileNameHasPath)
             # Load the default config file to use for this job
             # First try in the root of the job folder; then in the surveyor folder
-            if not self._push_file(utils.runtime_dir()):
-                 if not self._push_file(utils.surveyor_dir()):
+            if not self._push_file(runtime_dir()):
+                 if not self._push_file(surveyor_dir()):
                     log.msg(1, "{} not present in default locations".format(
                             self._configName))
 
@@ -149,7 +151,7 @@ class ConfigStack( object ):
             # not a config file in the measureRoot we raise an error
             raise utils.ConfigError(uistrings.STR_ErrorNoDefaultConfig.format(
                     self._configName, os.path.abspath(self._measureRootDir),
-                    utils.runtime_dir(), utils.surveyor_dir()))
+                    runtime_dir(), surveyor_dir()))
         return activeConfig
 
     def _push_file(self, dirName):

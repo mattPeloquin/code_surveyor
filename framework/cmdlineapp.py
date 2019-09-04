@@ -13,6 +13,9 @@ import traceback
 import multiprocessing
 from numbers import Number
 
+from . import surveyor_dir
+from . import init_surveyor_dir
+from . import runtime_dir
 from framework import job
 from framework import writer
 from framework import filetype
@@ -194,7 +197,7 @@ class SurveyorCmdLine( object ):
         self._write_aggregates()
 
     def _parse_command_line(self, cmdArgs):
-        utils.init_surveyor_dir(cmdArgs[0])
+        init_surveyor_dir(cmdArgs[0])
         self._args = cmdlineargs.SurveyorCmdLineArgs(cmdArgs, self)
         helpText = None
         try:
@@ -651,8 +654,8 @@ class SurveyorCmdLine( object ):
             self._print(" Level: {}  Modes: {}\n".format(
                     log.level(), log.modes()))
             self._print(" Debug output:    {}\n".format(str(log.out()).split(',')[0]))
-            self._print(" Surveyor folder: {}\n".format(utils.surveyor_dir()))
-            self._print(" CWD for job:     {}\n\n".format(utils.runtime_dir()))
+            self._print(" Surveyor folder: {}\n".format(surveyor_dir()))
+            self._print(" CWD for job:     {}\n\n".format(runtime_dir()))
 
     def _display_feedback(self):
         '''

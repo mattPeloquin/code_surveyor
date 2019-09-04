@@ -77,6 +77,8 @@ class Worker( Process ):
                 self._run()
 
         except Exception as exc:
+            # Any exception is treated as fatal and will proceed to orderly shutdown.
+            # Can't pickle tracebacks, so get in-context stack dump to send back
             log.msg(1, "EXCEPTION occurred in job worker loop")
             log.stack(2)
             exc._stack_trace = "".join(
@@ -85,6 +87,8 @@ class Worker( Process ):
         except KeyboardInterrupt:
             log.cc(1, "Ctrl-c occurred in job worker loop")
         finally:
+            log.cc(1, "TERMINATING")
+            # Orderly shutdown, clean up queues  
             # Know the input and out queues are empty or hard stop, so 
             # cancel_join_thread (don't wait for them to clear)
             self._inputQueue.close()
@@ -94,7 +98,7 @@ class Worker( Process ):
             # If items on the control queue, join_thread to make sure queue is flushed
             self._controlQueue.close()
             self._controlQueue.join_thread()
-            log.cc(1, "TERMINATING")
+            log.cc(2, "TERMINATED")
 
     def _run(self):
         '''
@@ -145,19 +149,24 @@ class Worker( Process ):
             pass
         finally:
             if 'EXIT' == myCommand:
-                log.cc(1, "COMMAND: EXIT")
+                log.cc(2, "COMMAND: EXIT")
                 self._continueProcessing = False
                 exitNow = True
             elif 'WORK_DONE' == myCommand:
-                log.cc(1, "COMMAND: WORK_DONE")
+                log.cc(2, "COMMAND: WORK_DONE")
                 self._continueProcessing = False
+            replace_commands( queue, )
+        return exitNow
+
+    @staticmethod
+    def _check_for_stop(self):
             for target, command, payload in otherCommands:
                 log.cc(3, "putting {}, {}".format(target, command))
                 try:
                     self._controlQueue.put((target, command, payload), True, CONTROL_QUEUE_TIMEOUT)
                 except Full:
                     raise utils.JobException("FATAL EXCEPTION - Control Queue full, can't put")
-        return exitNow
+
 
     #-------------------------------------------------------------------------
     #  File measurement

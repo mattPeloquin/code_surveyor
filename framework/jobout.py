@@ -8,8 +8,8 @@ import _thread
 import threading
 from queue import Empty, Full
 
-from framework import log
 from . import utils
+from . import log
 
 OUTPUT_EMPTY_WAIT = 0.02
 CONTROL_QUEUE_TIMEOUT = 0.1
@@ -105,10 +105,10 @@ class OutThread( threading.Thread ):
             pass
         finally:
             if 'EXIT' == myCommand:
-                log.cc(1, "COMMAND: EXIT")
+                log.cc(2, "COMMAND: EXIT")
                 continueProcessing = False
             elif 'WORK_DONE' == myCommand:
-                log.cc(1, "COMMAND: WORK_DONE")
+                log.cc(2, "COMMAND: WORK_DONE")
                 self._workDone = True
             for (target, command, payload) in otherCommands:
                 log.cc(3, "putting {}, {}".format(target, command))

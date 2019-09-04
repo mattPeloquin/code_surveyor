@@ -5,10 +5,15 @@
     Logic for processing surveyor command line is encapsulated here.
     This code is TIGHTLY COUPLED to cmdlineapp.py and has dependencies
     on csmodule options as well.
+
+    TBD - this code was created before argsparse in v2.7 was readily available;
+    could be redone with modern v3 args, but there hasn't been a need.
 '''
 
 import os
 import sys
+
+from . import surveyor_dir
 from framework import utils
 from framework import log
 from framework.uistrings import *
@@ -43,10 +48,6 @@ ScanAllCodeFilesToSkip = ['.*']
 
 
 class SurveyorCmdLineArgs( object ):
-    '''
-    With Python V2.7, Surveyor's command line processing needs could be met
-    with an argsparse implementaiton. Some day...
-    '''
 
     def __init__(self, cmdArgs, surveyorApp):
         '''
@@ -67,7 +68,6 @@ class SurveyorCmdLineArgs( object ):
         self._measureFilter = None
         self._ignoreNonCode = False
         self._inclDeletedLines = False
-
 
     def parse_args(self):
         '''
@@ -186,7 +186,6 @@ class SurveyorCmdLineArgs( object ):
         else:
             log.config(4, vars(self._app))
 
-
     def config_option_list(self):
         '''
         Maps application modifiable config options to the name, value list format
@@ -209,7 +208,6 @@ class SurveyorCmdLineArgs( object ):
         if self._inclDeletedLines:
             configOptions.append(('DELTA_INCL_DELETED', None))
         return configOptions
-
 
     #-------------------------------------------------------------------------
     #  Sub-parsing for more complex options
@@ -239,7 +237,6 @@ class SurveyorCmdLineArgs( object ):
         if measurePath:
             self._app._jobOpt.pathsToMeasure.append(measurePath)
 
-
     def _parse_output_file(self):
         '''
         Is stdout, a dir, or a file being requested for output redirection?
@@ -256,7 +253,6 @@ class SurveyorCmdLineArgs( object ):
                 if outDir:
                     self._app._outFileDir = outDir
 
-
     def _parse_config_options(self):
         if len(self.args.get_current()) > 2:
             configOpt = self.args.get_current()[2].lower()
@@ -271,7 +267,6 @@ class SurveyorCmdLineArgs( object ):
         else:
             self.configCustom = self._get_next_str()
 
-
     def _parse_delta_options(self):
         if len(self.args.get_current()) > 2:
             configOpt = self.args.get_current()[2].lower()
@@ -280,7 +275,6 @@ class SurveyorCmdLineArgs( object ):
         self._app._jobOpt.deltaPath = self._get_next_str()
         if not os.path.isdir(self._app._jobOpt.deltaPath):
             raise utils.OutputException(STR_ErrorBadPath.format(self._app._jobOpt.deltaPath))
-
 
     def _parse_help_options(self):
         '''
@@ -293,7 +287,7 @@ class SurveyorCmdLineArgs( object ):
                 self.args.move_next()
                 helpRequest = self.args.get_current()[:1].lower()
                 helpStr = STR_HelpText_Usage + self._get_detailed_help(helpRequest).format(
-                        utils.surveyor_dir())
+                                                        surveyor_dir())
                 if helpRequest == CMDARG_CONFIG_CUSTOM:
                     modules = [("framework.basemodule", "basemodule", "_BaseModule")]
                     import csmodules
@@ -328,7 +322,6 @@ class SurveyorCmdLineArgs( object ):
         except KeyError:
             return STR_HelpText_Options
 
-
     def _parse_scan_options(self):
         '''
         Decode the various ScanAll options
@@ -359,7 +352,6 @@ class SurveyorCmdLineArgs( object ):
                 self._metaDataOptions['DATE'] = ['%Y', '%m', '%d']
                 self._metaDataOptions['DIRS'] = METADATA_MAXDEPTH_DEFAULT
 
-
     def _parse_skip_options(self):
         '''
         Decode which skip mode and any required params
@@ -377,7 +369,6 @@ class SurveyorCmdLineArgs( object ):
             elif skipOpt in CMDARG_SKIP_NONCODE:
                 self._app._ignoreNonCode = True
 
-
     def _parse_aggregate_options(self):
         '''
         Aggregate key and values are required
@@ -393,7 +384,6 @@ class SurveyorCmdLineArgs( object ):
         if thresholdKey:
             self._app._aggregateThresholdKey = thresholdKey
             self._app._aggregateThreshold = self._get_next_int()
-
 
     def _parse_metadata_options(self):
         '''
@@ -424,7 +414,6 @@ class SurveyorCmdLineArgs( object ):
             self._metaDataOptions['DIRS'] = 8
         elif fc in CMDARG_METADATA_MAXDEPTH:
             self._metaDataOptions['DIRS'] = self._get_next_int(validRange=range(0, MAX_PATH_DEPTH))
-
 
     def _parse_debug_options(self):
         '''
@@ -481,7 +470,6 @@ class SurveyorCmdLineArgs( object ):
         # Call back to application to update debug mode
         self._app.set_logging(level, modes=modes, printLen=printLen, out=outStream)
 
-
     #-------------------------------------------------------------------------
     #  Processing argument list and setting values
 
@@ -499,14 +487,12 @@ class SurveyorCmdLineArgs( object ):
         else:
             return default
 
-
     def _get_next_str(self, optional=False, default=None):
         '''
         No special handling other than casting to str as of yet
         '''
         nextStr = self._get_next_param(optional, default)
         return str(nextStr) if nextStr else None
-
 
     def _get_next_int(self, default=None, validRange=None, optional=False):
         '''
@@ -579,9 +565,3 @@ class Args( object ):
 
     def is_param_next(self):
         return not self.finished() and not self.is_cmd_next()
-
-
-
-
-
-
