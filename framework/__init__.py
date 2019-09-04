@@ -66,6 +66,9 @@ __version__ = '7'
     A Py2Exe compiled program, sys.argv[0] will not always return fully 
     qualified path, so use sys.executable, which will.
 '''
+import os
+import sys
+
 StartupPath = None
 
 def surveyor_dir():

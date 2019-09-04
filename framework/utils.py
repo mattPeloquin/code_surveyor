@@ -46,14 +46,14 @@ class AbstractMethod(SurveyorException):
 #-----------------------------------------------------------------------------
 # Job processing utils
 
-@staticmethod
-def _check_for_stop(self):
-        for target, command, payload in otherCommands:
-            log.cc(3, "putting {}, {}".format(target, command))
-            try:
-                self._controlQueue.put((target, command, payload), True, CONTROL_QUEUE_TIMEOUT)
-            except Full:
-                raise utils.JobException("FATAL EXCEPTION - Control Queue full, can't put")
+from queue import Full
+
+def put_commands( queue, commands, timeout ):
+    for target, command, payload in commands:
+        try:
+            queue.put((target, command, payload), True, timeout)
+        except Full:
+            raise JobException("FATAL EXCEPTION - Control Queue full, can't put")
 
 #-----------------------------------------------------------------------------
 #  Timing Utils

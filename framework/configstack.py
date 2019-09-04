@@ -6,8 +6,8 @@
 
 import os
 
-from . surveyor_dir
-from . runtime_dir
+from . import surveyor_dir
+from . import runtime_dir
 from framework import configentry
 from framework import configreader
 from framework import fileext

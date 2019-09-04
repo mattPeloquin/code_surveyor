@@ -152,21 +152,17 @@ class Worker( Process ):
                 log.cc(2, "COMMAND: EXIT")
                 self._continueProcessing = False
                 exitNow = True
+
             elif 'WORK_DONE' == myCommand:
                 log.cc(2, "COMMAND: WORK_DONE")
                 self._continueProcessing = False
-            replace_commands( queue, )
+
+            if otherCommands:
+                log.cc(4, "replacing conmmands - {}".format(otherCommands))
+                utils.put_commands(self._controlQueue, otherCommands, 
+                                    CONTROL_QUEUE_TIMEOUT)
+
         return exitNow
-
-    @staticmethod
-    def _check_for_stop(self):
-            for target, command, payload in otherCommands:
-                log.cc(3, "putting {}, {}".format(target, command))
-                try:
-                    self._controlQueue.put((target, command, payload), True, CONTROL_QUEUE_TIMEOUT)
-                except Full:
-                    raise utils.JobException("FATAL EXCEPTION - Control Queue full, can't put")
-
 
     #-------------------------------------------------------------------------
     #  File measurement
