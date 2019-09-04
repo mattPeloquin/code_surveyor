@@ -76,7 +76,7 @@ class CodeSurveyorModules( object ):
                 getattr(csmoduleClassInstance, method)
 
         except (ImportError, AttributeError):
-            log.traceback()
+            log.stack()
             raise utils.SurveyorException(uistrings.STR_ErrorLoadingModule.format(modName))
         return csmoduleClassInstance
 

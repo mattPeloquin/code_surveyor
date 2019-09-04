@@ -9,6 +9,7 @@
 import os
 import sys
 import locale
+import traceback
 import multiprocessing
 from numbers import Number
 
@@ -36,6 +37,7 @@ LONG_PROCESSING_THRESHOLD = 5
 CONSOLE_OUT_WIDTH = 78
 MAX_ERRORS_TO_DISPLAY = 15
 MAX_ERRORS_DEBUG = 200
+
 
 class SurveyorCmdLine( object ):
     '''
@@ -200,7 +202,7 @@ class SurveyorCmdLine( object ):
         except KeyboardInterrupt:
             self._keyboardInterrupt()
         except Exception as e:
-            log.traceback()
+            log.stack()
             helpText = STR_HelpText_Usage
             if len(e.args):
                 helpText += STR_ErrorCmdLineText.format(str(self._args.args), str(e))
@@ -265,15 +267,15 @@ class SurveyorCmdLine( object ):
         if self._keyboardInterrupt is not None:
             self._print(STR_UserInterrupt)
         if self._finalException is not None:
+            exc = self._finalException
             # Don't use log or print output here to avoid more errors
             self._out.write(STR_Error)
-            if not isinstance(self._finalException, utils.SurveyorException):
-                self._out.write(str(type(self._finalException)) + "\n")
-            self._out.write(str(self._finalException) + "\n")
-            if log.level() >= 1:
-                import traceback
-                self._out.write(traceback.format_exc())
-
+            if log.level():
+                dump = getattr( exc, '_stack_trace', "".join(
+                        traceback.format_exception(type(exc), exc, exc.__traceback__)))
+                self._out.write(dump)
+            else:
+                self._out.write(str(exc) + "\n")
 
     #-----------------------------------------------------------------------------
     #   Callbacks from Job
@@ -466,7 +468,6 @@ class SurveyorCmdLine( object ):
 
         return firstDupeFilePath
 
-
     #-------------------------------------------------------------------------
     #  Aggregates
 
@@ -564,7 +565,6 @@ class SurveyorCmdLine( object ):
                     analysisRows.append(valueRow)
             log.msg(1, "Aggregate: {}".format(analysisRows))
             self._writer.write_items(hackOutTagMeasure, analysisRows)
-
 
     #-------------------------------------------------------------------------
     #   UI Display

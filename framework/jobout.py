@@ -53,9 +53,9 @@ class OutThread( threading.Thread ):
             log.cc(1, "Ctrl-c occurred in OUTPUT THREAD")
             _thread.interrupt_main()
         except Exception as e:
-            log.cc(1, "EXCEPTION occurred while processing output queue")
+            log.msg(1, "EXCEPTION occurred processing output queue")
             self._controlQueue.put_nowait(('JOB', 'EXCEPTION', e))
-            log.traceback(2)
+            log.stack(2)
         finally:
             log.cc(1, "TERMINATING")
 

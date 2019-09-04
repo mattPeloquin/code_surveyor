@@ -332,7 +332,7 @@ self.reStringLiteral = re.compile(r''' (["](?!["]) .+? ["]) | (['](?![']) .+? ['
                     self._analyze_line(line, analysis, onCommentLine)
 
             except Exception as e:
-                log.traceback()
+                log.stack()
                 raise utils.FileMeasureError(
                         "Problem processing line: {} with module: {}\n{}".format(
                         str(sum(self.counts['RawLines'])), self.__class__.__name__, str(e)))

@@ -20,6 +20,7 @@
 import os
 import sys
 import time
+import traceback
 from multiprocessing import Process
 from errno import EACCES
 from queue import Empty, Full
@@ -70,13 +71,17 @@ class Worker( Process ):
 
             if self._profileName is not None:
                 import cProfile;
-                cProfile.runctx('self._run()', globals(), {'self': self}, self._profileName + self.name)
+                cProfile.runctx('self._run()', globals(), {'self': self}, 
+                                    self._profileName + self.name)
             else:
                 self._run()
 
-        except Exception as e:
-            log.cc(1, "EXCEPTION occurred in job worker loop")
-            self._controlQueue.put_nowait(('JOB', 'EXCEPTION', e))
+        except Exception as exc:
+            log.msg(1, "EXCEPTION occurred in job worker loop")
+            log.stack(2)
+            exc._stack_trace = "".join(
+                traceback.format_exception(type(exc), exc, exc.__traceback__))
+            self._controlQueue.put_nowait(('JOB', 'EXCEPTION', exc))
         except KeyboardInterrupt:
             log.cc(1, "Ctrl-c occurred in job worker loop")
         finally:
@@ -207,12 +212,12 @@ class Worker( Process ):
                         self.file_measured_callback)
 
         except utils.FileMeasureError as e:
-            log.traceback(2)
+            log.stack(2)
             self._currentFileErrors.append(
                     uistrings.STR_ErrorMeasuringFile.format(self._currentFilePath, str(e)))
             continueProcessing = not options.breakOnError
         except EnvironmentError as e:
-            log.traceback(2)
+            log.stack(2)
             if e.errno == EACCES:
                 self._currentFileErrors.append(
                         uistrings.STR_ErrorOpeningMeasureFile_Access.format(self._currentFilePath))

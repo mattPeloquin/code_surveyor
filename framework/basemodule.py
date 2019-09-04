@@ -151,7 +151,7 @@ class _BaseModule( object ):
             try:
                 exec(configCode)
             except Exception as e:
-                log.traceback()
+                log.stack()
                 raise utils.CsModuleException("Error executing Config Option: {}".format(str(e)))
 
     def _cs_init_config_options(self):
