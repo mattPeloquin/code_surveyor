@@ -102,23 +102,21 @@ def get_match_string(match):
 def get_match_pattern(match):
     return str(match.re.pattern)
 
-def check_bytes_below_threshold(byteStr, chars, minWin, startPos, threshold):
+def check_chars_below_threshold(byteStr, chars, minWin, startPos, threshold):
     '''
     If the ratio of bytes not in chars is above the given threshold
     (within the startPos and minWin window size) return false
     '''
-    #print "Bytes: {}".format(byteStr)
     isBelowThreshold = True
     bytePos = 0
     badChars = 0
-    # One byte at a time, bailing if we exceed threshold
+    # One byte at a time, bailing if threshold exceeded
     for char in byteStr:
         bytePos += 1
         if bytePos < startPos:
             continue
         if not char in chars:
             badChars += 1
-            #print "byte: {}".format(char)
         if bytePos >= minWin or bytePos == len(byteStr):
             badCharRatio = float(badChars)/float(bytePos)
             if badCharRatio > threshold:
@@ -126,7 +124,7 @@ def check_bytes_below_threshold(byteStr, chars, minWin, startPos, threshold):
                 break
     return isBelowThreshold
 
-def is_str_binary(byteStr):
+def is_str_binary(charStr):
     '''
     Default check for whether a string is binary
     '''
@@ -136,26 +134,16 @@ def is_str_binary(byteStr):
     startPoint = 1
     minWindowSize = 15
     threshold = 0.2
-    return not check_bytes_below_threshold(byteStr.lstrip()[:windowSize],
+    return not check_chars_below_threshold(charStr.lstrip()[:windowSize],
             textChars, minWindowSize, startPoint, threshold)
-
-def check_start_phrases(searchString, phrases):
-    '''
-    Do any of the provided phrases match the start of searchString?
-    '''
-    phraseFound = None
-    for phrase in phrases:
-        if searchString.startswith(phrase):
-            phraseFound = phrase
-            break
-    return phraseFound
 
 def strip_null_chars(rawString):
     '''
-    In 2 or 4 byte (UTF-16, UTF32) unicode conversion, null chars may be
-    inserted into an Ascii string.
-    TBD -- make search UTF/Unicode aware
+    Remove both:
+     - null chars inserted into string by bad 2 or 4 byte decoding
+     - Stray newlines; assumed that line processing as already occurred
     '''
+    print(">>>>>>", type(rawString))
     return rawString.replace('\00', '').replace('\n', '')
 
 def strip_annoying_chars(rawStr):
@@ -243,15 +231,6 @@ def get_file_mod_time_str(filePath, dateFormat):
 def get_file_size(filePath):
     fileStats = os.stat(filePath)
     return int(fileStats.st_size)
-
-def get_file_start(fileObject, maxWin):
-    '''
-    Get maxWin bytes from file
-    '''
-    fileObject.seek(0)
-    fileStart = fileObject.read(maxWin)
-    fileObject.seek(0)
-    return fileStart
 
 class SurveyorPathParser( object ):
     '''

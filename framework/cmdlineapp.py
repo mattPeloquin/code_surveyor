@@ -16,19 +16,21 @@ from numbers import Number
 from . import surveyor_dir
 from . import init_surveyor_dir
 from . import runtime_dir
-from framework import job
-from framework import writer
-from framework import filetype
-from framework import basemodule
-from framework import configstack
-from framework import cmdlineargs
-from framework import utils
-from framework import log
-from framework.uistrings import *
+from . import runtime_ext
+from . import job
+from . import writer
+from . import filetype
+from . import basemodule
+from . import configstack
+from . import cmdlineargs
+from . import utils
+from . import log
+from .uistrings import *
 
 # Debugging support
 #import code; code.interact(local=locals())
 #import pdb; pdb.set_trace()
+
 
 # Factory method for running a Surveyor job
 def run_job(cmdArgs, outputStream, printWidth=None):
@@ -622,7 +624,7 @@ class SurveyorCmdLine( object ):
 
     def _display_help(self, text):
         folderSeperator = '/' if os.name == 'posix' else '\\'
-        self._print(text.format(utils.runtime_ext(), folderSeperator))
+        self._print(text.format(runtime_ext(), folderSeperator))
 
     def _display_start(self):
         '''

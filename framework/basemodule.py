@@ -28,11 +28,11 @@ import os
 import filecmp
 import difflib
 
-from framework import configentry
-from framework import filetype
-from framework import uistrings
-from framework import utils
-from framework import log
+from . import configentry
+from . import filetype
+from . import uistrings
+from . import utils
+from . import log
 
 # Fixed measurement column names
 METADATA_FILENAME      = "fileName"
@@ -340,8 +340,9 @@ class _BaseModule( object ):
         if tryToOpen:
             # Open the file if it hasn't been opened, otherwise reset it
             if not oldFileHandle:
-                # Use line buffering to reduce the cost of open on larger files
-                newFileHandle = open(filePath, 'r', 1)
+                # Use buffering to reduce the cost of open on larger files
+                # TBD - make encoding an option
+                newFileHandle = open(filePath, 'r', buffering=2^24, encoding='utf-8')
             else:
                 newFileHandle = oldFileHandle
                 newFileHandle.seek(0)    # Reset the file
@@ -382,7 +383,7 @@ class _BaseModule( object ):
                 measureFileLines = fileToMeasure.readlines()
                 fileToMeasure.close()
                 deltaFileLines = None
-                with open(deltaFilePath, 'rU') as deltaFile:
+                with open(deltaFilePath, 'r') as deltaFile:
                     deltaFileLines = deltaFile.readlines()
                 diffLines = difflib.unified_diff(deltaFileLines, measureFileLines)
                 if diffLines:

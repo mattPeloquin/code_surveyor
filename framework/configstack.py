@@ -8,13 +8,13 @@ import os
 
 from . import surveyor_dir
 from . import runtime_dir
-from framework import configentry
-from framework import configreader
-from framework import fileext
-from framework import uistrings
-from framework import log
-from framework import utils
-from framework.modules import CodeSurveyorModules
+from . import configentry
+from . import configreader
+from . import fileext
+from . import uistrings
+from . import log
+from . import utils
+from .modules import CodeSurveyorModules
 
 
 def config_items_for_file(configEntrys, fileName):

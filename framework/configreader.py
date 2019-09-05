@@ -7,11 +7,11 @@
 import os
 import re
 
-from framework import configentry
-from framework import fileext
-from framework import uistrings
-from framework import log
-from framework import utils
+from . import configentry
+from . import fileext
+from . import uistrings
+from . import log
+from . import utils
 
 # Special identifiers used with the config file
 CONFIG_LINE_CONTINUE = r'\\'

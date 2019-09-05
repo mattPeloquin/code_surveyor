@@ -59,6 +59,18 @@
 '''
 __version__ = '7'
 
+import os
+import sys
+from pathlib import Path
+
+'''
+    Support relative import paths and usage of surveyor.py and framework module as 
+    both run-time script and package
+'''
+_file = Path(__file__).resolve()
+sys.path.append( str(_file.parents[2]) )
+import code_surveyor.framework
+__package__ = 'code_surveyor.framework'
 
 '''
     Surveyor Dir
@@ -66,8 +78,6 @@ __version__ = '7'
     A Py2Exe compiled program, sys.argv[0] will not always return fully 
     qualified path, so use sys.executable, which will.
 '''
-import os
-import sys
 
 StartupPath = None
 

@@ -3,9 +3,9 @@
     Ecapsulates Management of Surveyor measurement modules
 '''
 
-from framework import uistrings
-from framework import utils
-from framework import log
+from . import uistrings
+from . import utils
+from . import log
 
 
 class CodeSurveyorModules( object ):
@@ -24,21 +24,17 @@ class CodeSurveyorModules( object ):
     def __init__(self):
         self.moduleList = {}
 
-
-    def get_csmodule(self, csmoduleName, options=[]):
+    def get_csmodule(self, moduleName, options=[]):
         '''
         Return the csmodule class with the given name, if it exists
         '''
-        csmodule = None
-        try:
-            csmodule = self.moduleList[self._csmod_hash(csmoduleName, options)]
-        except KeyError:
-            log.config(2, "Loading csmodule: {}".format(csmoduleName))
-            csmodule = self._load_csmodule(csmoduleName, options)
-            if csmodule is not None:
-                self.moduleList[self._csmod_hash(csmoduleName, options)] = csmodule
-        return csmodule
-
+        modHash = self._csmod_hash(moduleName, options)
+        module = self.moduleList.get(modHash)
+        if not module:
+            log.config(2, "Loading csmodule: {}".format(moduleName))
+            module = self._load_csmodule(moduleName, options)
+            self.moduleList[modHash] = module
+        return module
 
     def _csmod_hash(self, moduleName, options):
         if options is None:
@@ -51,7 +47,6 @@ class CodeSurveyorModules( object ):
                 else:
                     optHash += name + str(value)
             return moduleName + optHash
-
 
     def _load_csmodule(self, modName, options):
         '''
@@ -76,7 +71,7 @@ class CodeSurveyorModules( object ):
                 getattr(csmoduleClassInstance, method)
 
         except (ImportError, AttributeError):
-            log.stack()
+            log.traceback()
             raise utils.SurveyorException(uistrings.STR_ErrorLoadingModule.format(modName))
         return csmoduleClassInstance
 

@@ -11,7 +11,7 @@ import logging
 import traceback
 import threading
 import multiprocessing
-from framework import utils
+from . import utils
 
 #-----------------------------------------------------------------
 #  Public Interface

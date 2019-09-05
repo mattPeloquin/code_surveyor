@@ -14,9 +14,10 @@ import os
 import sys
 
 from . import surveyor_dir
-from framework import utils
-from framework import log
-from framework.uistrings import *
+from . import utils
+from . import log
+from .uistrings import *
+
 
 # Default depth to break out path info
 METADATA_MAXDEPTH_DEFAULT = 4
@@ -290,7 +291,7 @@ class SurveyorCmdLineArgs( object ):
                                                         surveyor_dir())
                 if helpRequest == CMDARG_CONFIG_CUSTOM:
                     modules = [("framework.basemodule", "basemodule", "_BaseModule")]
-                    import csmodules
+                    from code_surveyor import csmodules
                     for modName in csmodules.__all__:
                         modules.append(("csmodules." + modName, modName, modName))
                     for fileName, modName, className in modules:

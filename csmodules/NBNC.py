@@ -31,9 +31,10 @@
 import re
 import sys
 
-from framework import utils
-from framework import log
-from framework import basemodule
+from code_surveyor.framework import utils
+from code_surveyor.framework import log
+from code_surveyor.framework import basemodule
+
 
 class NBNC( basemodule._BaseModule ):
     '''

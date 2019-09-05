@@ -5,7 +5,7 @@
 '''
 
 
-from framework import log
+from . import log
 
 CONFIG_ITEM_SEPARATOR = ';'
 CONFIG_DELIM_CHAR = ':'

@@ -14,10 +14,10 @@ import errno
 from base64 import b64encode
 from xml.dom import minidom
 
-from framework import configentry
-from framework import uistrings
-from framework import utils
-from framework import log
+from . import configentry
+from . import uistrings
+from . import utils
+from . import log
 
 NEW_LINE = "\n"
 

@@ -7,9 +7,9 @@ import re
 import sys
 import zlib
 
-from framework import utils
-from framework import log
-from framework import basemodule
+from code_surveyor.framework import utils
+from code_surveyor.framework import log
+from code_surveyor.framework import basemodule
 from .NBNC import NBNC
 from .searchMixin import _searchMixin
 

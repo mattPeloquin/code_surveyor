@@ -20,7 +20,7 @@
 import os
 import re
 import fnmatch
-from framework import log
+from . import log
 
 # Special tokens we allow in filter patterns
 BLANK_FILE_EXT = 'NO_EXT'

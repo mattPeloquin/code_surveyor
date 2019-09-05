@@ -8,7 +8,7 @@
 
 import binascii
 
-from framework import utils
+from code_surveyor.framework import utils
 from .Code import Code
 
 

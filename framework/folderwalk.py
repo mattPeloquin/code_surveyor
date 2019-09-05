@@ -7,10 +7,10 @@
 import os
 import fnmatch
 
-from framework import configstack
-from framework import fileext
-from framework import utils
-from framework import log
+from . import configstack
+from . import fileext
+from . import utils
+from . import log
 
 class FolderWalker( object ):
     '''
