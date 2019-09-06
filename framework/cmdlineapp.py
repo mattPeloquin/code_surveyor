@@ -725,8 +725,6 @@ class SurveyorCmdLine( object ):
         # Key optional information related to measurement content
         if 0 < self._args.ignoreSize:
             self._print(STR_SummaryLargeFile.format(self._args.ignoreSize))
-        if self._args.ignoreBinary:
-            self._print(STR_SummaryBinaryFile)
         if self._jobOpt.deltaPath is not None:
             self._print(STR_SummaryDeltaFile)
         # Display sorted measurement results in alphabetical order

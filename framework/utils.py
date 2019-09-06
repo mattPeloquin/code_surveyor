@@ -143,7 +143,6 @@ def strip_null_chars(rawString):
      - null chars inserted into string by bad 2 or 4 byte decoding
      - Stray newlines; assumed that line processing as already occurred
     '''
-    print(">>>>>>", type(rawString))
     return rawString.replace('\00', '').replace('\n', '')
 
 def strip_annoying_chars(rawStr):

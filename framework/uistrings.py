@@ -1,10 +1,10 @@
 #-*- coding: latin-1 -*-
 #---- Code Surveyor, Copyright 2019 Matt Peloquin, MIT License
 '''
-    Surveyor Application UI Strings
+    Code Surveyor UI Strings
 
-    All non-debug strings used by the framework are placed here, to provide
-    for easy update, potential translation, and compactness in code
+    All non-debug strings used by the framework are here for easy update
+    and potential translation.
 '''
 
 #-------------------------------------------------------------------------
@@ -54,44 +54,44 @@ STR_ErrorLoadingModule = """
     Python error while loading Surveyor module: {}
 """
 STR_ErrorNoDefaultConfig = """
-    To execute this job a config file named "{0}" is needed in one of:
+    To execute this job a config file named "{}" is needed in one of:
 
-       1) Root of the tree being measured:  {1}
-       2) Current working folder:  {2}
-       3) Surveyor folder:  {3}
+       1) Root of the tree being measured:  {}
+       2) Current working folder:  {}
+       3) Surveyor folder:  {}
 
     If no config files are obtainable, use the "-a" option.
 """
 STR_ErrorConfigFile = """
     Error processing configuration file:
-      {0}
+      {}
 
-      {1}
+      {}
 """
 STR_ErrorConfigEntry = """
     Error processing config entry...
-      {0}
-      {1}
+      {}
+      {}
 """
 STR_ErrorConfigParam = """
     Error processing config entry parameter...
-      Config Entry: {0}
-      Parameter:    {1}
-      {2}
+      Config Entry: {}
+      Parameter:    {}
+      {}
 """
 STR_ErrorConfigConstantsTooDeep = """
-    Constant recursuion depth of {0} exceeded:
-        {1}
+    Constant recursuion depth of {} exceeded:
+        {}
 """
 STR_ErrorConfigValidate = """
     Validation problem with configuration file
 
-        {0}
+        {}
 """
 STR_ErrorConfigInvalidMeasure = """
     Config file requested measure that module cannot perform:
 
-        {0}, {1}
+        {}, {}
 """
 STR_ErrorConfigDupeMeasures = """
     Duplicate measures:
@@ -154,9 +154,6 @@ STR_SummaryMeasured = """
 STR_SummaryLargeFile = """
  Files larger than {0:n} bytes will have empty measures
  """
-STR_SummaryBinaryFile = """
- Probable binary files will have empty measures
- """
 STR_SummaryDeltaFile = """
  Unchanged files (relative to delta) will have empty measures
  """
@@ -187,11 +184,12 @@ STR_SummaryRunTime = "\nRun time: {0:.1f} seconds\n"
 
 STR_HelpText_Intro = (
 """
- Configurable and extensible scanning across languages. Non-Blank,
- Non-Comment (NBNC) lines of code, searching, and other measures (see
- "surveyor.code" for more details).
+ Configurable and extensible code scanning. Non-Blank, Non-Comment (NBNC)
+ lines of code, searching, and other measures (see "surveyor.code").
  A csv file containing per-file measures is created. Customized config files
  can (should) be placed in your folders to override "surveyor.code". 
+ By default folders and files starting with ".", common non-code file
+ extensions and binary files are skipped.
  """)
 
 CMDARG_LEADS = '-'
@@ -223,19 +221,18 @@ CMDARG_DEBUG = 'z'
 STR_HelpText_Usage = """
  Usage:
 
-    surveyor{0} [options] [pathToMeasure]{1}[fileFilters]...
+    surveyor{} [options] [pathToMeasure]{}[fileFilters]...
     """
 STR_HelpText_Options = """
     [pathToMeasure]   Measure path(s) other than the current one
     [fileFilters]     File type filters (documented in surveyor.examples)
-    -delta <path>     Measure diffs and additions relative to <path> (+)
     -config <name>    Look for config files called <name> (+)
 
     -a[mode]          Scan all files, ignoring config file settings (+)
-    -s<mode> <filt>   Skip files due to binary, size, name, locaiton, etc. (+)
+    -delta <path>     Measure diffs and additions relative to <path> (+)
+    -s<mode> <filt>   Skip files due to size, name, or locaiton (+)
     -inclPath <filt>  Include only files in paths that match filter (+)
     -nonRecursive     Only scan <pathToMeasure>, do not scan sub-folders
-    -breakOnError     Stop scanning if file error is encountered
 
     -exDupe [thresh]  Exclude duplicate files from measure totals (+)
     -m <metadata>     Modify metadata output (e.g., folder reporting depth) (+)
@@ -249,6 +246,7 @@ STR_HelpText_Options = """
     -verbose [len]    Additional summary information on console, up to [len]
     -z[level][modes]  Debug tracing to console (+)
     -workers <num>    Use <num> worker processes (default is NumCores-1)
+    -breakOnError     Stop scanning if file error is encountered
     -quiet            Don't update console status, useful for piping output
 
     -? [name]         Additional help on [name] for items above ending in (+)
@@ -298,7 +296,7 @@ STR_HelpText_Config = """
     is below. Look inside each module for more detail:
 """
 STR_HelpText_Config_OptionModName = """
-  {0}
+  {}
 """
 STR_HelpText_Config_OptionItemHelp = "   {0:<20} {1}\n"
 
@@ -351,14 +349,11 @@ STR_HelpText_Scan_All = """
     -am     Fastest way to get a list of all files in a folder tree. This does
             does not open files so only provides metadata (e.g., byte size).
 
-    -an     Quick scan using the NBNC module to measure likely code files.
-            To determine likely code files, a number of filters are used:
-                + Folders and files starting with "." and "cvs" are skipped
-                + Common non-code file extensions are skipped (-sn)
-                + Files detected as binary are skipped (-sb)
-                + Large files are skipped (the -sl option)
+    -an     Quick scan using the NBNC module to measure likely code files,
+            using the default folder and extension types, skipping 
+            binary files, and skipping large files (the -sl option).
             Does not provide generated-code detection like -ad, but can be
-            significantly faster than -ad for large code bases.
+            faster than -ad for large code bases.
 
     -ad     Deep code scan of all likely code files. This applies the same file
             criteria as "-an", but uses the Code module to do a full analysis
@@ -373,15 +368,11 @@ STR_HelpText_Scan_All = """
 CMDARG_SKIP_DIR = 'd'
 CMDARG_SKIP_FILE = 'f'
 CMDARG_SKIP_SIZE = 's'
-CMDARG_SKIP_BINARY = 'b'
-CMDARG_SKIP_NONCODE = 'n'
 STR_HelpText_Skip = """
  Skip folders and/or files that match the given criteria:
 
-    -sn             Do not measure files with common non-code extensions
     -sd <folders>   Skip folders that match <folders>
     -sf <files>     Skip files that match filters in <files>
-    -sbinary        Attempt to identify and skip binary files
     -ssize [bytes]  Do not measure files larger than [bytes]
 
     Run with the -z2f debug option to see which files are being skipped.

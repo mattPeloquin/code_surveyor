@@ -35,39 +35,39 @@ DefaultMetadata = {
 IGNORE_SIZE_DEFAULT = 5000000
 
 # Put max limits on things that don't strictly need limits,
-# but which can be silly if left unchecked
-MAX_WORKERS = 1024
+# but which are silly if left unchecked
+MAX_WORKERS = 256
 MAX_PATH_DEPTH = 128
 
-# Used with the -a option
-MeasureAll = [("MeasureAll", 'measure NBNC file.* *')]
+# Default skipping of folders and files with '.' prefix
+DefaultSkip = {
+    'Folders': ['.?*', 'cvs'],
+    'Files': ['.*'],
+    }
 
-# Used with the -ad option
+# Used with the -a and -ad options
+MeasureAll = [("MeasureAll", 'measure NBNC file.* *')]
 MeasureCode = [("MeasureCode", 'measure Code * * OPT:MEASURE_EMPTIES')]
-ScanAllCodeFoldersToSkip = ['.?*', 'cvs']
-ScanAllCodeFilesToSkip = ['.*']
 
 
 class SurveyorCmdLineArgs( object ):
 
     def __init__(self, cmdArgs, surveyorApp):
-        '''
-        TBD -- refactor options into classes that are passed back from the
-        args class instead of set directly by it
-        '''
         self.args = Args(cmdArgs, CMDARG_LEADS)
+
         self._app = surveyorApp
+        self._app._jobOpt.skipFolders = DefaultSkip['Folders']
+        self._app._jobOpt.skipFiles = DefaultSkip['Files']               
 
         # Config options to provide back to the application
         self.configCustom = None
         self.configOverrides = []
         self.ignoreSize = 0
-        self.ignoreBinary = False
 
         # Config options to provide final state to config options
+        self._forceAll = False
         self._metaDataOptions = DefaultMetadata
         self._measureFilter = None
-        self._ignoreNonCode = False
         self._inclDeletedLines = False
 
     def parse_args(self):
@@ -200,12 +200,10 @@ class SurveyorCmdLineArgs( object ):
                 configOptions.append(('MEASURE_FILTER', '*'))
             else:
                 configOptions.append(('MEASURE_FILTER', self._measureFilter))
+        if self._forceAll:
+            configOptions.append(('FORCE_ALL_TYPES', None))
         if self.ignoreSize > 0:
             configOptions.append(('IGNORE_SIZE', self.ignoreSize))
-        if self.ignoreBinary:
-            configOptions.append(('IGNORE_BINARY', None))
-        if self._ignoreNonCode:
-            configOptions.append(('IGNORE_NONCODE', None))
         if self._inclDeletedLines:
             configOptions.append(('DELTA_INCL_DELETED', None))
         return configOptions
@@ -327,7 +325,7 @@ class SurveyorCmdLineArgs( object ):
         '''
         Decode the various ScanAll options
         '''
-        # Default for scan all is to measure all files with NBNC csmodule
+        self._forceAll = True
         self.configOverrides = MeasureAll
         self._metaDataOptions['SIZE'] = None
         self._app._detailed = True
@@ -342,10 +340,6 @@ class SurveyorCmdLineArgs( object ):
             # Tuning options to focus on code
             if scanOpt in CMDARG_SCAN_ALL_CODE:
                 self.ignoreSize = IGNORE_SIZE_DEFAULT
-                self.ignoreBinary = True
-                self._app._ignoreNonCode = True
-                self._app._jobOpt.skipFolders = ScanAllCodeFoldersToSkip
-                self._app._jobOpt.skipFiles = ScanAllCodeFilesToSkip
 
             # Special case, don't open files, just do metadata
             if scanOpt in CMDARG_SCAN_ALL_METADATA:
@@ -365,10 +359,6 @@ class SurveyorCmdLineArgs( object ):
                 self._app._jobOpt.skipFiles.extend(self._get_next_param().split(CMDLINE_SEPARATOR))
             elif skipOpt in CMDARG_SKIP_SIZE:
                 self.ignoreSize = self._get_next_int()
-            elif skipOpt in CMDARG_SKIP_BINARY:
-                self.ignoreBinary = True
-            elif skipOpt in CMDARG_SKIP_NONCODE:
-                self._app._ignoreNonCode = True
 
     def _parse_aggregate_options(self):
         '''

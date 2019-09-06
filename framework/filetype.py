@@ -11,7 +11,6 @@ import os
 import string
 
 from . import utils
-from . import log
 
 #-------------------------------------------------------------------------
 #  File Extentions Detection
@@ -47,85 +46,31 @@ def is_noncode_ext(filePath):
     rv = False
     if is_compressed_ext(filePath) or _has_ext(filePath, NonCodeFileExtensions):
         rv = True
-        log.file(3, "   NonCodeExt:  {}".format(os.path.basename(filePath)))
     return rv
 
 #-------------------------------------------------------------------------
-#  File tyoe detection
+#  File type detection
 #  Look into file for cases not picked up by file extension
 
-# Magic numbers and phrases
-# Look for known magic numbers and phrases in file start
-NonCodeFileStart = [
-    '\x7ELF',           # Linux/Unif ELF exe (often don't have file extensions)
-    'PK\x03\x04',       # Many types of zipped file structure
-    '\x1F\x8B\x08',     # Gzip
-    ]
-def is_noncode_file(fileObject, maxWindowSize=30):   
-    fileStart = _get_file_start(fileObject, maxWindowSize)
-    phraseFound = _check_start_phrases(fileStart, NonCodeFileStart)
-    log.file(3, "   NonCodeFileStart({}): {} -> {}".format(
-            phraseFound, fileStart, os.path.basename(fileObject.name)))
-    return phraseFound is not None
+textChars = ( string.ascii_letters + string.digits + 
+                string.punctuation + string.whitespace )
+charsToCheck = 128          # Big enough window to grab, but small for speed
+startPoint = 4              # Skip start of file, for hidden BOM codes
+minWindowSize = 32          # Get a big enough min window to be feasible
+nonTextThreshold = 0.2      # Have some tolerance to avoid false positives
 
-def is_text_file(fileObject):
+def is_text_file(fileStart):
     '''
     Text to non-text ratio
     Do an approximate check for a text file by looking at how many non-text
     bytes are at the start of the file
     This is most expensive operation, so should be saved for last
-    TBD -- expose tuning parameters to config?
     '''
-    textChars = ( string.ascii_letters + string.digits + 
-                    string.punctuation + string.whitespace )
-    charsToCheck = 128          # Big enough window to grab, but small for speed
-    startPoint = 4              # Skip start of file, for hidden BOM codes
-    minWindowSize = 32          # Get a big enough min window to be feasible
-    nonTextThreshold = 0.2      # Have some tolerance to avoid false positives
-
-    # Grab the first bytes of the file, STRIPPING NULLS (for bad decodings)
-    start = _get_file_start(fileObject, charsToCheck)
-    start = utils.strip_null_chars(start)
-
-    print(">>>1111", type(start), start)
-
-
-    isBelowThreshold = utils.check_chars_below_threshold( start,
-                        textChars, minWindowSize, startPoint, nonTextThreshold)
-    log.file(3,"   IsTextFile({}): {} -> {}".format(
-            isBelowThreshold, os.path.basename(fileObject.name), start))
+    isBelowThreshold = utils.check_chars_below_threshold( fileStart, textChars, 
+                                    minWindowSize, startPoint, nonTextThreshold)
     return isBelowThreshold
 
-
-# TBD -- may use in future for more robust unicode support
-TextFileType = [
-    '\xEF\xBB\xBF',     # UTF-8
-    '\xFF\xFE',         # UTF-16 LE or UTF-32 LE
-    '\xFE\xFF',         # UTF-16 BE
-    '\x00\x00\xFE\xFF', # UTF-32 BE
-    ]
-
 #-------------------------------------------------------------------------
-
-def _get_file_start(fileObject, maxWin):
-    '''
-    Get maxWin bytes from file
-    '''
-    fileObject.seek(0)
-    fileStart = fileObject.read(maxWin)
-    fileObject.seek(0)
-    return fileStart
-
-def _check_start_phrases(searchString, phrases):
-    '''
-    Do any of the provided phrases match the start of searchString?
-    '''
-    phraseFound = None
-    for phrase in phrases:
-        if searchString.startswith(phrase):
-            phraseFound = phrase
-            break
-    return phraseFound
 
 def _has_ext(filePath, extensions):
     '''
@@ -140,6 +85,4 @@ def _has_ext(filePath, extensions):
         else:
             break
     return fileExt.lower() in extensions
-
-
 
