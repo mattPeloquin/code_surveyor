@@ -31,9 +31,10 @@
 import re
 import sys
 
-from framework import utils
-from framework import log
-from framework import basemodule
+from code_surveyor.framework import utils
+from code_surveyor.framework import log
+from code_surveyor.framework import basemodule
+
 
 class NBNC( basemodule._BaseModule ):
     '''
@@ -332,7 +333,7 @@ self.reStringLiteral = re.compile(r''' (["](?!["]) .+? ["]) | (['](?![']) .+? ['
                     self._analyze_line(line, analysis, onCommentLine)
 
             except Exception as e:
-                log.traceback()
+                log.stack()
                 raise utils.FileMeasureError(
                         "Problem processing line: {} with module: {}\n{}".format(
                         str(sum(self.counts['RawLines'])), self.__class__.__name__, str(e)))

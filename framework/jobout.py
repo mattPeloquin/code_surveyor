@@ -8,8 +8,8 @@ import _thread
 import threading
 from queue import Empty, Full
 
-from framework import log
 from . import utils
+from . import log
 
 OUTPUT_EMPTY_WAIT = 0.02
 CONTROL_QUEUE_TIMEOUT = 0.1
@@ -53,9 +53,9 @@ class OutThread( threading.Thread ):
             log.cc(1, "Ctrl-c occurred in OUTPUT THREAD")
             _thread.interrupt_main()
         except Exception as e:
-            log.cc(1, "EXCEPTION occurred while processing output queue")
+            log.msg(1, "EXCEPTION occurred processing output queue")
             self._controlQueue.put_nowait(('JOB', 'EXCEPTION', e))
-            log.traceback(2)
+            log.stack(2)
         finally:
             log.cc(1, "TERMINATING")
 
@@ -105,17 +105,16 @@ class OutThread( threading.Thread ):
             pass
         finally:
             if 'EXIT' == myCommand:
-                log.cc(1, "COMMAND: EXIT")
+                log.cc(2, "COMMAND: EXIT")
                 continueProcessing = False
+
             elif 'WORK_DONE' == myCommand:
-                log.cc(1, "COMMAND: WORK_DONE")
+                log.cc(2, "COMMAND: WORK_DONE")
                 self._workDone = True
-            for (target, command, payload) in otherCommands:
-                log.cc(3, "putting {}, {}".format(target, command))
-                try:
-                    self._controlQueue.put((target, command, payload), True, CONTROL_QUEUE_TIMEOUT)
-                except Full:
-                    raise utils.JobException("FATAL EXCEPTION - Control Queue full, can't put")
+
+            if otherCommands:
+                log.cc(4, "replacing conmmands - {}".format(otherCommands))
+                utils.put_commands(self._controlQueue, otherCommands,
+                                    CONTROL_QUEUE_TIMEOUT)
+
         return continueProcessing
-
-

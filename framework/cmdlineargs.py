@@ -5,13 +5,19 @@
     Logic for processing surveyor command line is encapsulated here.
     This code is TIGHTLY COUPLED to cmdlineapp.py and has dependencies
     on csmodule options as well.
+
+    TBD - this code was created before argsparse in v2.7 was readily available;
+    could be redone with modern v3 args, but there hasn't been a need.
 '''
 
 import os
 import sys
-from framework import utils
-from framework import log
-from framework.uistrings import *
+
+from . import surveyor_dir
+from . import utils
+from . import log
+from .uistrings import *
+
 
 # Default depth to break out path info
 METADATA_MAXDEPTH_DEFAULT = 4
@@ -29,43 +35,40 @@ DefaultMetadata = {
 IGNORE_SIZE_DEFAULT = 5000000
 
 # Put max limits on things that don't strictly need limits,
-# but which can be silly if left unchecked
-MAX_WORKERS = 1024
+# but which are silly if left unchecked
+MAX_WORKERS = 256
 MAX_PATH_DEPTH = 128
 
-# Used with the -a option
-MeasureAll = [("MeasureAll", 'measure NBNC file.* *')]
+# Default skipping of folders and files with '.' prefix
+DefaultSkip = {
+    'Folders': ['.?*', 'cvs'],
+    'Files': ['.*'],
+    }
 
-# Used with the -ad option
+# Used with the -a and -ad options
+MeasureAll = [("MeasureAll", 'measure NBNC file.* *')]
 MeasureCode = [("MeasureCode", 'measure Code * * OPT:MEASURE_EMPTIES')]
 
 
 class SurveyorCmdLineArgs( object ):
-    '''
-    Surveyor's command line processing predated v2.7, which is why 
-    argsparse is not used. Some day...
-    '''
 
     def __init__(self, cmdArgs, surveyorApp):
-        '''
-        TBD -- refactor options into classes that are passed back from the
-        args class instead of set directly by it
-        '''
         self.args = Args(cmdArgs, CMDARG_LEADS)
+
         self._app = surveyorApp
+        self._app._jobOpt.skipFolders = DefaultSkip['Folders']
+        self._app._jobOpt.skipFiles = DefaultSkip['Files']               
 
         # Config options to provide back to the application
         self.configCustom = None
         self.configOverrides = []
         self.ignoreSize = 0
-        self.ignoreBinary = False
 
         # Config options to provide final state to config options
+        self._forceAll = False
         self._metaDataOptions = DefaultMetadata
         self._measureFilter = None
-        self._ignoreNonCode = False
         self._inclDeletedLines = False
-
 
     def parse_args(self):
         '''
@@ -184,7 +187,6 @@ class SurveyorCmdLineArgs( object ):
         else:
             log.config(4, vars(self._app))
 
-
     def config_option_list(self):
         '''
         Maps application modifiable config options to the name, value list format
@@ -198,16 +200,13 @@ class SurveyorCmdLineArgs( object ):
                 configOptions.append(('MEASURE_FILTER', '*'))
             else:
                 configOptions.append(('MEASURE_FILTER', self._measureFilter))
+        if self._forceAll:
+            configOptions.append(('FORCE_ALL_TYPES', None))
         if self.ignoreSize > 0:
             configOptions.append(('IGNORE_SIZE', self.ignoreSize))
-        if self.ignoreBinary:
-            configOptions.append(('IGNORE_BINARY', None))
-        if self._ignoreNonCode:
-            configOptions.append(('IGNORE_NONCODE', None))
         if self._inclDeletedLines:
             configOptions.append(('DELTA_INCL_DELETED', None))
         return configOptions
-
 
     #-------------------------------------------------------------------------
     #  Sub-parsing for more complex options
@@ -237,7 +236,6 @@ class SurveyorCmdLineArgs( object ):
         if measurePath:
             self._app._jobOpt.pathsToMeasure.append(measurePath)
 
-
     def _parse_output_file(self):
         '''
         Is stdout, a dir, or a file being requested for output redirection?
@@ -254,7 +252,6 @@ class SurveyorCmdLineArgs( object ):
                 if outDir:
                     self._app._outFileDir = outDir
 
-
     def _parse_config_options(self):
         if len(self.args.get_current()) > 2:
             configOpt = self.args.get_current()[2].lower()
@@ -269,7 +266,6 @@ class SurveyorCmdLineArgs( object ):
         else:
             self.configCustom = self._get_next_str()
 
-
     def _parse_delta_options(self):
         if len(self.args.get_current()) > 2:
             configOpt = self.args.get_current()[2].lower()
@@ -278,7 +274,6 @@ class SurveyorCmdLineArgs( object ):
         self._app._jobOpt.deltaPath = self._get_next_str()
         if not os.path.isdir(self._app._jobOpt.deltaPath):
             raise utils.OutputException(STR_ErrorBadPath.format(self._app._jobOpt.deltaPath))
-
 
     def _parse_help_options(self):
         '''
@@ -291,10 +286,10 @@ class SurveyorCmdLineArgs( object ):
                 self.args.move_next()
                 helpRequest = self.args.get_current()[:1].lower()
                 helpStr = STR_HelpText_Usage + self._get_detailed_help(helpRequest).format(
-                        utils.surveyor_dir())
+                                                        surveyor_dir())
                 if helpRequest == CMDARG_CONFIG_CUSTOM:
                     modules = [("framework.basemodule", "basemodule", "_BaseModule")]
-                    import csmodules
+                    from code_surveyor import csmodules
                     for modName in csmodules.__all__:
                         modules.append(("csmodules." + modName, modName, modName))
                     for fileName, modName, className in modules:
@@ -326,12 +321,11 @@ class SurveyorCmdLineArgs( object ):
         except KeyError:
             return STR_HelpText_Options
 
-
     def _parse_scan_options(self):
         '''
         Decode the various ScanAll options
         '''
-        # Default for scan all is to measure all files with NBNC csmodule
+        self._forceAll = True
         self.configOverrides = MeasureAll
         self._metaDataOptions['SIZE'] = None
         self._app._detailed = True
@@ -346,15 +340,12 @@ class SurveyorCmdLineArgs( object ):
             # Tuning options to focus on code
             if scanOpt in CMDARG_SCAN_ALL_CODE:
                 self.ignoreSize = IGNORE_SIZE_DEFAULT
-                self.ignoreBinary = True
-                self._app._ignoreNonCode = True
 
             # Special case, don't open files, just do metadata
             if scanOpt in CMDARG_SCAN_ALL_METADATA:
                 self._measureFilter = CMDARG_OUTPUT_FILTER_METADATA
                 self._metaDataOptions['DATE'] = ['%Y', '%m', '%d']
                 self._metaDataOptions['DIRS'] = METADATA_MAXDEPTH_DEFAULT
-
 
     def _parse_skip_options(self):
         '''
@@ -368,11 +359,6 @@ class SurveyorCmdLineArgs( object ):
                 self._app._jobOpt.skipFiles.extend(self._get_next_param().split(CMDLINE_SEPARATOR))
             elif skipOpt in CMDARG_SKIP_SIZE:
                 self.ignoreSize = self._get_next_int()
-            elif skipOpt in CMDARG_SKIP_BINARY:
-                self.ignoreBinary = True
-            elif skipOpt in CMDARG_SKIP_NONCODE:
-                self._app._ignoreNonCode = True
-
 
     def _parse_aggregate_options(self):
         '''
@@ -389,7 +375,6 @@ class SurveyorCmdLineArgs( object ):
         if thresholdKey:
             self._app._aggregateThresholdKey = thresholdKey
             self._app._aggregateThreshold = self._get_next_int()
-
 
     def _parse_metadata_options(self):
         '''
@@ -420,7 +405,6 @@ class SurveyorCmdLineArgs( object ):
             self._metaDataOptions['DIRS'] = 8
         elif fc in CMDARG_METADATA_MAXDEPTH:
             self._metaDataOptions['DIRS'] = self._get_next_int(validRange=range(0, MAX_PATH_DEPTH))
-
 
     def _parse_debug_options(self):
         '''
@@ -477,7 +461,6 @@ class SurveyorCmdLineArgs( object ):
         # Call back to application to update debug mode
         self._app.set_logging(level, modes=modes, printLen=printLen, out=outStream)
 
-
     #-------------------------------------------------------------------------
     #  Processing argument list and setting values
 
@@ -495,14 +478,12 @@ class SurveyorCmdLineArgs( object ):
         else:
             return default
 
-
     def _get_next_str(self, optional=False, default=None):
         '''
         No special handling other than casting to str as of yet
         '''
         nextStr = self._get_next_param(optional, default)
         return str(nextStr) if nextStr else None
-
 
     def _get_next_int(self, default=None, validRange=None, optional=False):
         '''
@@ -575,9 +556,3 @@ class Args( object ):
 
     def is_param_next(self):
         return not self.finished() and not self.is_cmd_next()
-
-
-
-
-
-

@@ -28,11 +28,12 @@ import os
 import filecmp
 import difflib
 
-from framework import configentry
-from framework import filetype
-from framework import uistrings
-from framework import utils
-from framework import log
+from . import log
+from . import utils
+from . import uistrings
+from .fileopen import open_file_for_survey
+from .configentry import CONFIG_TAG_PREFIX
+
 
 # Fixed measurement column names
 METADATA_FILENAME      = "fileName"
@@ -78,6 +79,15 @@ class _BaseModule( object ):
     # be overrideen in config files. Some of these can also be set by the
     # application
     ConfigOptions_base = {
+        'FORCE_ALL_TYPES': (
+            '''self._forceAll = True''',
+            'Override default skipping of non-code and binary files'),
+        'IGNORE_SIZE': (
+            '''self._sizeThreshold = int(optValue)''',
+            'Ignore files greater than the given byte size'),
+        'IGNORE_PATHS': (
+            '''self._ignorePaths = eval(optValue)''',
+            'List of names to ignore they appear anywhere in path (no wildcards)'),
         'MEASURE_EMPTIES': (
             '''self._writeEmptyMeasures = True''',
             'Override default behavior of skipping output of empty measures'),
@@ -106,18 +116,6 @@ class _BaseModule( object ):
         'METADATA_ONLY': (
             '''self._metaDataOnly = True''',
             'Only collect metadata, do not open or measure files'),
-        'IGNORE_NONCODE': (
-            '''self._ignoreNonCode = True''',
-            'Ignore files with common non-code extensions'),
-        'IGNORE_SIZE': (
-            '''self._sizeThreshold = int(optValue)''',
-            'Ignore files greater than the given byte size'),
-        'IGNORE_BINARY': (
-            '''self._ignoreBinary = True''',
-            'Ignore probable binary files (signatures and non-text chars at start)'),
-        'IGNORE_PATHS': (
-            '''self._ignorePaths = eval(optValue)''',
-            'List of names to ignore they appear anywhere in path (no wildcards)'),
         'DELTA_INCL_DELETED': (
             '''self._deltaIncludeDeleted = True''',
             'Include deleted lines in delta counts'),
@@ -151,7 +149,7 @@ class _BaseModule( object ):
             try:
                 exec(configCode)
             except Exception as e:
-                log.traceback()
+                log.stack()
                 raise utils.CsModuleException("Error executing Config Option: {}".format(str(e)))
 
     def _cs_init_config_options(self):
@@ -160,15 +158,14 @@ class _BaseModule( object ):
 
         # Options managed in the base module
         self._reFlags = re.IGNORECASE | re.VERBOSE
+        self._forceAll = False
+        self._ignorePaths = []
+        self._sizeThreshold = 0
         self._metaDataOpts = {}
         self._metaDataOnly = False
         self._measureFilter = None
         self._writeEmptyMeasures = False
         self._deltaFilePath = None
-        self._sizeThreshold = 0
-        self._ignoreBinary = False
-        self._ignoreNonCode = False
-        self._ignorePaths = []
         self._deltaIncludeDeleted = False
 
     @classmethod
@@ -319,48 +316,14 @@ class _BaseModule( object ):
 
     #-------------------------------------------------------------------------
 
-    def _open_file(self, filePath, oldFileHandle=None):
+    def _open_file(self, filePath, existingFile=None):
         '''
-        Return the requested fileObject if criteria are met
+        Return fileObject if criteria are met
+        Delegates reusing existing file handles to avoid overhead of 
+        file open when many measures run on the same file. 
         '''
-        tryToOpen = True
-        newFileHandle = None
-
-        # Check for extensions
-        if self._ignoreNonCode and (filetype.is_noncode_ext(filePath)):
-            log.file(1, "Skipping, non-code ext: {}".format(filePath))
-            tryToOpen = False
-        # Check for size threshold
-        elif self._sizeThreshold > 0:
-            fileSize = utils.get_file_size(filePath)
-            if self._sizeThreshold < fileSize:
-                log.file(1, "Skipping, size {}: {}".format(fileSize, filePath))
-                tryToOpen = False
-
-        if tryToOpen:
-            # Open the file if it hasn't been opened, otherwise reset it
-            if not oldFileHandle:
-                # Use line buffering to reduce the cost of open on larger files
-                newFileHandle = open(filePath, 'r', 1)
-            else:
-                newFileHandle = oldFileHandle
-                newFileHandle.seek(0)    # Reset the file
-
-            # Do tests that look at start of the file
-            keepFileOpen = False
-            if self._ignoreNonCode and filetype.is_noncode_file(newFileHandle):
-                log.file(1, "Skipping, non-code start: {}".format(filePath))
-            elif self._ignoreBinary and not filetype.is_text_file(newFileHandle):
-                log.file(1, "Skipping, binary char: {}".format(filePath))
-            else:
-                keepFileOpen = True
-            if not keepFileOpen:
-                # If NOT passed an existing file handle, close what we opened
-                if not oldFileHandle and newFileHandle:
-                    newFileHandle.close()
-                newFileHandle = None
-
-        return newFileHandle
+        return open_file_for_survey(filePath, existingFile, self._forceAll,
+                                    self._sizeThreshold)
 
     def _get_delta_lines(self, filePath, deltaFilePath):
         '''
@@ -382,7 +345,7 @@ class _BaseModule( object ):
                 measureFileLines = fileToMeasure.readlines()
                 fileToMeasure.close()
                 deltaFileLines = None
-                with open(deltaFilePath, 'rU') as deltaFile:
+                with open(deltaFilePath, 'r') as deltaFile:
                     deltaFileLines = deltaFile.readlines()
                 diffLines = difflib.unified_diff(deltaFileLines, measureFileLines)
                 if diffLines:
@@ -413,7 +376,7 @@ class _BaseModule( object ):
                 tagPos = 1
                 for tag in configEntry.tags:
                     if tag:
-                        measures[configentry.CONFIG_TAG_PREFIX + str(tagPos)] = tag
+                        measures[CONFIG_TAG_PREFIX + str(tagPos)] = tag
                     tagPos += 1
 
             elif optKey in ('DATE'):
@@ -444,9 +407,7 @@ class _BaseModule( object ):
             if optKey in ('DEBUG', 'DUPE'):
                 measures[METADATA_CONFIG] = str(configEntry)
 
-
 #-----------------------------------------------------------------------------
-#  Util methods
 
 def _compare_filters(filter1, filter2):
     match = (filter1 == filter2 or

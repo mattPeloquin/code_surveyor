@@ -82,31 +82,4 @@ For a quick scan of all files use the "-am" option, which only looks at metadata
 # System Overview
 Most design information is documented in the code itself; see specific files for descriptions of modules and classes.
 
-Surveyor's design approach blends application, script, and OO framework to balance several goals:
-
-    - easy to use out of the box as a stand-alone application
-    - high configurability through config files and command-line options
-    - measurement customization by anyone comfortable with regex
-    - easy extensibility for file processing through csmodules
-    - make framework internals accessible to non-Python programmers
-
-Surveyor roughly follows Python programming idioms but is intended to be accessible and self-evident to programmers who do not have a Python background.
-The design is primarily object-oriented but Surveyor code strives to have a "scriptable feel", i.e., as small as possible. 
-Thus procedural approaches and/or less abstraction are used when it better achieves this goal.
-
-## csmodules
-Holds Surveyor measurement modules. The two most important of these are:
-
-    NBNC.py -- Core per-line implementation for measuring code files. See
-               it's comment header for a description of NBNC line logic.
-
-    Code.py -- Logic for machine-detection, routine-dection, searching,
-               more detailed code measurements.
-
-See "csmodules\__init__.py" for a design overview.
-
-## framework
-Contains the key abstractions and behavior.
-See "framework\__init__.py" for an overview.
-
 Copyright (c) 2004-2019 Matt Peloquin and Construx Software

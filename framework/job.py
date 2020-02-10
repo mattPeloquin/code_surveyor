@@ -189,12 +189,12 @@ class Job( object ):
         self._send_output_command('EXIT')
         raise
 
-    def _exception(self, e):
+    def _exception(self, exc):
         log.cc(1, "EXCEPTION -- EXITING JOB...")
         self._send_workers_command('EXIT')
         self._send_output_command('EXIT')
-        log.traceback()
-        raise e
+        log.stack(3)
+        raise exc
 
     def _wait_then_exit(self):
         log.cc(1, "Waiting to exit workers and output thread...")
@@ -241,8 +241,8 @@ class Job( object ):
 
     def _put_files_in_queue(self, path, deltaPath, filesAndConfigs):
         '''
-        Package files from the given folder into workItems that are then grouped
-        into workPackages that are placed into the task queue for jobworkers.
+        Package files from the path into workItems that are grouped
+        into workPackages and placed into the task queue for jobworkers.
         Packages are broken up if files number or total size exceeds
         thresholds to help evenly distribute load across cores
         '''
@@ -252,9 +252,9 @@ class Job( object ):
 
         for fileName, configEntrys in filesAndConfigs:
 
-            # Expensive to check file size here, but it is worth it for
-            # pracelling widely varying file sizes out to cores for CPU intensive
-            # jobs. Profiling shows it is not worth caching this
+            # Expensive to check file size here, but worth it for pracelling widely
+            # varying file sizes out to cores for CPU intensive jobs. 
+            # Profiling shows it is not worth caching this
             try:
                 fileSize = utils.get_file_size(os.path.join(path, fileName))
             except Exception as e:
@@ -265,7 +265,7 @@ class Job( object ):
                 # an unusual case, so don't bother with a pathway back to the main
                 # application; just swallow it and provide debug
                 log.msg(1, str(e))
-                log.traceback()
+                log.stack()
                 continue
 
             log.cc(3, "WorkItem: {}, {}".format(fileSize, fileName))
@@ -326,11 +326,10 @@ class Job( object ):
 
     def _check_command(self):
         '''
-        Check the command queue to see if there have been problems while
-        running a job
-        Exceptions received from the command queue are thrown
+        Check command queue for any problems posted while running a job
+        Exceptions received from the command queue are unpackaged 
+        and thrown for main to handle
         '''
-        myCommand = None
         otherCommands = []
         try:
             while self._continueProcessing:
@@ -341,24 +340,19 @@ class Job( object ):
                         # Error notifications in the control queue are only used to support
                         # break on error functionality -- the error info itself will be handled
                         # by the output queue. Jobs with lots of errors can clog up the
-                        # control queue, so clear these out as we find them
+                        # control queue, so clear these out as found
                         log.cc(1, "COMMAND: ERROR for file: {}".format(payload))
                         if self._options.breakOnError:
                             self._continueProcessing = False
-                    else:
-                        myCommand = command
-                        break
+                    elif 'EXCEPTION' == command:
+                        log.cc(1, "COMMAND: EXCEPTION RECEIVED")
+                        raise payload
                 else:
                     otherCommands.append((target, command, payload))
         except Empty:
             pass
         finally:
-            if 'EXCEPTION' == myCommand:
-                log.cc(1, "COMMAND: EXCEPTION RECEIVED")
-                raise Exception( payload )
-
-            # If everything is okay, or some other exception happened, want to
-            # make sure to put any queue items removed back in the queue
+            # Put any queue items removed back in the queue
             for (target, command, payload) in otherCommands:
                 log.cc(3, "putting {}, {}".format(target, command))
                 self._controlQueue.put_nowait((target, command, payload))

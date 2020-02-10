@@ -9,22 +9,28 @@
 import os
 import sys
 import locale
+import traceback
 import multiprocessing
 from numbers import Number
 
-from framework import job
-from framework import writer
-from framework import filetype
-from framework import basemodule
-from framework import configstack
-from framework import cmdlineargs
-from framework import utils
-from framework import log
-from framework.uistrings import *
+from . import surveyor_dir
+from . import init_surveyor_dir
+from . import runtime_dir
+from . import runtime_ext
+from . import job
+from . import writer
+from . import filetype
+from . import basemodule
+from . import configstack
+from . import cmdlineargs
+from . import utils
+from . import log
+from .uistrings import *
 
 # Debugging support
 #import code; code.interact(local=locals())
 #import pdb; pdb.set_trace()
+
 
 # Factory method for running a Surveyor job
 def run_job(cmdArgs, outputStream, printWidth=None):
@@ -36,6 +42,7 @@ LONG_PROCESSING_THRESHOLD = 5
 CONSOLE_OUT_WIDTH = 78
 MAX_ERRORS_TO_DISPLAY = 15
 MAX_ERRORS_DEBUG = 200
+
 
 class SurveyorCmdLine( object ):
     '''
@@ -192,7 +199,7 @@ class SurveyorCmdLine( object ):
         self._write_aggregates()
 
     def _parse_command_line(self, cmdArgs):
-        utils.init_surveyor_dir(cmdArgs[0])
+        init_surveyor_dir(cmdArgs[0])
         self._args = cmdlineargs.SurveyorCmdLineArgs(cmdArgs, self)
         helpText = None
         try:
@@ -200,7 +207,7 @@ class SurveyorCmdLine( object ):
         except KeyboardInterrupt:
             self._keyboardInterrupt()
         except Exception as e:
-            log.traceback()
+            log.stack()
             helpText = STR_HelpText_Usage
             if len(e.args):
                 helpText += STR_ErrorCmdLineText.format(str(self._args.args), str(e))
@@ -265,15 +272,15 @@ class SurveyorCmdLine( object ):
         if self._keyboardInterrupt is not None:
             self._print(STR_UserInterrupt)
         if self._finalException is not None:
+            exc = self._finalException
             # Don't use log or print output here to avoid more errors
             self._out.write(STR_Error)
-            if not isinstance(self._finalException, utils.SurveyorException):
-                self._out.write(str(type(self._finalException)) + "\n")
-            self._out.write(str(self._finalException) + "\n")
-            if log.level() >= 1:
-                import traceback
-                self._out.write(traceback.format_exc())
-
+            if log.level():
+                dump = getattr( exc, '_stack_trace', "".join(
+                        traceback.format_exception(type(exc), exc, exc.__traceback__)))
+                self._out.write(dump)
+            else:
+                self._out.write(str(exc) + "\n")
 
     #-----------------------------------------------------------------------------
     #   Callbacks from Job
@@ -466,7 +473,6 @@ class SurveyorCmdLine( object ):
 
         return firstDupeFilePath
 
-
     #-------------------------------------------------------------------------
     #  Aggregates
 
@@ -565,7 +571,6 @@ class SurveyorCmdLine( object ):
             log.msg(1, "Aggregate: {}".format(analysisRows))
             self._writer.write_items(hackOutTagMeasure, analysisRows)
 
-
     #-------------------------------------------------------------------------
     #   UI Display
 
@@ -619,7 +624,7 @@ class SurveyorCmdLine( object ):
 
     def _display_help(self, text):
         folderSeperator = '/' if os.name == 'posix' else '\\'
-        self._print(text.format(utils.runtime_ext(), folderSeperator))
+        self._print(text.format(runtime_ext(), folderSeperator))
 
     def _display_start(self):
         '''
@@ -651,8 +656,8 @@ class SurveyorCmdLine( object ):
             self._print(" Level: {}  Modes: {}\n".format(
                     log.level(), log.modes()))
             self._print(" Debug output:    {}\n".format(str(log.out()).split(',')[0]))
-            self._print(" Surveyor folder: {}\n".format(utils.surveyor_dir()))
-            self._print(" CWD for job:     {}\n\n".format(utils.runtime_dir()))
+            self._print(" Surveyor folder: {}\n".format(surveyor_dir()))
+            self._print(" CWD for job:     {}\n\n".format(runtime_dir()))
 
     def _display_feedback(self):
         '''
@@ -720,8 +725,6 @@ class SurveyorCmdLine( object ):
         # Key optional information related to measurement content
         if 0 < self._args.ignoreSize:
             self._print(STR_SummaryLargeFile.format(self._args.ignoreSize))
-        if self._args.ignoreBinary:
-            self._print(STR_SummaryBinaryFile)
         if self._jobOpt.deltaPath is not None:
             self._print(STR_SummaryDeltaFile)
         # Display sorted measurement results in alphabetical order

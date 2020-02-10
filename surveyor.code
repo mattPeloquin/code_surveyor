@@ -28,7 +28,7 @@
 
 # verb  module measures files                           tag1        tag2    tag3 / options/ Comments
 
-measure  Code   *       NO_EXT;*.sh;*.bat;*.cmd         shell       code    OPT:IGNORE_BINARY
+measure  Code   *       NO_EXT;*.sh;*.bat;*.cmd         shell       code    
 measure  Code   *       *.py;*.pyd;*.pyw                python      code    OPT:PYTHON_TRIPLE_COMMENTS
 measure  Code   *       *.c                             c           code    definition
 measure  Code   *       *.h                             c           code    declaration

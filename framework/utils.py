@@ -1,13 +1,12 @@
 #---- Code Surveyor, Copyright 2020 Matt Peloquin, MIT License
 '''
-    Utility classes and routines shared by Surveyor components
+    Code shared by surveyor components
 '''
 
 import os
 import sys
 import time
 import string
-
 
 CURRENT_FOLDER = '.'
 CONSOLE_CR = "\r"
@@ -44,6 +43,17 @@ class AbstractMethod(SurveyorException):
         return "Abstract method called: {}.{}()".format(
             self.className, self.methodName)
 
+#-----------------------------------------------------------------------------
+# Job processing utils
+
+from queue import Full
+
+def put_commands( queue, commands, timeout ):
+    for target, command, payload in commands:
+        try:
+            queue.put((target, command, payload), True, timeout)
+        except Full:
+            raise JobException("FATAL EXCEPTION - Control Queue full, can't put")
 
 #-----------------------------------------------------------------------------
 #  Timing Utils
@@ -62,7 +72,6 @@ def timing_set(checkpointName='DEFAULT'):
 def timing_get(checkpointName='DEFAULT'):
     return time.time() - _timings[checkpointName]
 
-
 #-----------------------------------------------------------------------------
 # General utils
 
@@ -77,7 +86,6 @@ def safe_dict_get_float(dictionary, keyName):
         return float(safe_dict_get(dictionary, keyName))
     except Exception:
         return 0.0
-
 
 #-----------------------------------------------------------------------------
 # String and RE utils
@@ -94,24 +102,21 @@ def get_match_string(match):
 def get_match_pattern(match):
     return str(match.re.pattern)
 
-
-def check_bytes_below_threshold(byteStr, chars, minWin, startPos, threshold):
+def check_chars_below_threshold(byteStr, chars, minWin, startPos, threshold):
     '''
     If the ratio of bytes not in chars is above the given threshold
     (within the startPos and minWin window size) return false
     '''
-    #print "Bytes: {}".format(byteStr)
     isBelowThreshold = True
     bytePos = 0
     badChars = 0
-    # One byte at a time, bailing if we exceed threshold
+    # One byte at a time, bailing if threshold exceeded
     for char in byteStr:
         bytePos += 1
         if bytePos < startPos:
             continue
         if not char in chars:
             badChars += 1
-            #print "byte: {}".format(char)
         if bytePos >= minWin or bytePos == len(byteStr):
             badCharRatio = float(badChars)/float(bytePos)
             if badCharRatio > threshold:
@@ -119,8 +124,7 @@ def check_bytes_below_threshold(byteStr, chars, minWin, startPos, threshold):
                 break
     return isBelowThreshold
 
-
-def is_str_binary(byteStr):
+def is_str_binary(charStr):
     '''
     Default check for whether a string is binary
     '''
@@ -130,30 +134,16 @@ def is_str_binary(byteStr):
     startPoint = 1
     minWindowSize = 15
     threshold = 0.2
-    return not check_bytes_below_threshold(byteStr.lstrip()[:windowSize],
+    return not check_chars_below_threshold(charStr.lstrip()[:windowSize],
             textChars, minWindowSize, startPoint, threshold)
-
-
-def check_start_phrases(searchString, phrases):
-    '''
-    Do any of the provided phrases match the start of searchString?
-    '''
-    phraseFound = None
-    for phrase in phrases:
-        if searchString.startswith(phrase):
-            phraseFound = phrase
-            break
-    return phraseFound
-
 
 def strip_null_chars(rawString):
     '''
-    In 2 or 4 byte (UTF-16, UTF32) unicode conversion, null chars may be
-    inserted into an Ascii string.
-    TBD -- make search UTF/Unicode aware
+    Remove both:
+     - null chars inserted into string by bad 2 or 4 byte decoding
+     - Stray newlines; assumed that line processing as already occurred
     '''
     return rawString.replace('\00', '').replace('\n', '')
-
 
 def strip_annoying_chars(rawStr):
     '''
@@ -175,7 +165,6 @@ def strip_extended_chars(rawStr):
 _ExtendedChars = str.maketrans(dict.fromkeys(
                     ''.join([chr(byte) for byte in range(127, 255)])))
 
-
 def safe_ascii_string(byteStr):
     '''
     If the standard ASCII conversion has a Unicode error, attempt a
@@ -187,7 +176,6 @@ def safe_ascii_string(byteStr):
         return str(byteStr)
     except UnicodeEncodeError:
         return str(str(byteStr).encode('unicode_escape'))
-
 
 def safe_utf8_string(byteStr):
     '''
@@ -201,7 +189,6 @@ def safe_utf8_string(byteStr):
     except UnicodeEncodeError:
         ascii = str(byteStr).encode('string_escape')
         return str(ascii)
-
 
 def fit_string(fullString, maxLen, replacement="...", tailLen=None):
     '''
@@ -217,7 +204,6 @@ def fit_string(fullString, maxLen, replacement="...", tailLen=None):
             shortendString += newString[-tailLen:]
         newString = shortendString
     return newString
-
 
 MAX_RANK = sys.maxsize
 def match_ranking_label(rankingMap, value):
@@ -244,16 +230,6 @@ def get_file_mod_time_str(filePath, dateFormat):
 def get_file_size(filePath):
     fileStats = os.stat(filePath)
     return int(fileStats.st_size)
-
-def get_file_start(fileObject, maxWin):
-    '''
-    Get maxWin bytes and put the file back the way we found it
-    '''
-    fileObject.seek(0)
-    fileStart = fileObject.read(maxWin)
-    fileObject.seek(0)
-    return fileStart
-
 
 class SurveyorPathParser( object ):
     '''
@@ -286,54 +262,3 @@ class SurveyorPathParser( object ):
     def __str__(self):
         return self.filePath
 
-
-#-----------------------------------------------------------------------------
-#  System utils
-
-def running_as_exe():
-    '''
-    If the frozen attribute is present, we're in py2exe
-    otherwise we're in script
-    '''
-    return hasattr(sys, "frozen")
-
-def runtime_ext():
-    return "" if running_as_exe() else ".py"
-
-def runtime_dir():
-    '''
-    Return the directory that the job is being run from
-    Surveyor does not manipulate CWD, so we assume it is accurate
-    '''
-    return os.path.abspath(os.getcwd())
-
-
-'''
-    Surveyor Dir
-
-    In a Py2Exe compiled program, sys.argv[0] will not always return
-    the fully qualified path of the running program, but
-    sys.executable will in that case
-
-    Also, to support testing, we don't want to rely on setting of
-    sys.argv, so we initialize it at run time
-'''
-StartupPath = None
-
-def surveyor_dir():
-    '''
-    Return the directory that the surveyor script was loaded from
-    '''
-    assert StartupPath is not None
-    return StartupPath
-
-def init_surveyor_dir(arg0):
-    '''
-    This must be called before calling surveyor_dir
-    '''
-    global StartupPath
-    if running_as_exe():
-        StartupPath = sys.executable
-    else:
-        StartupPath = arg0
-    StartupPath = os.path.abspath(os.path.dirname(StartupPath))

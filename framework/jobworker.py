@@ -20,14 +20,15 @@
 import os
 import sys
 import time
+import traceback
 from multiprocessing import Process
 from errno import EACCES
 from queue import Empty, Full
 
-from framework import fileext
-from framework import uistrings
-from framework import log
-from framework import utils
+from . import fileext
+from . import uistrings
+from . import log
+from . import utils
 
 WORKER_PROC_BASENAME = "Job"
 INPUT_EMPTY_WAIT = 0.01
@@ -70,16 +71,24 @@ class Worker( Process ):
 
             if self._profileName is not None:
                 import cProfile;
-                cProfile.runctx('self._run()', globals(), {'self': self}, self._profileName + self.name)
+                cProfile.runctx('self._run()', globals(), {'self': self}, 
+                                    self._profileName + self.name)
             else:
                 self._run()
 
-        except Exception as e:
-            log.cc(1, "EXCEPTION occurred in job worker loop")
-            self._controlQueue.put_nowait(('JOB', 'EXCEPTION', e))
+        except Exception as exc:
+            # Any exception is treated as fatal and will proceed to orderly shutdown.
+            # Can't pickle tracebacks, so get in-context stack dump to send back
+            log.msg(1, "EXCEPTION occurred in job worker loop")
+            log.stack(2)
+            exc._stack_trace = "".join(
+                traceback.format_exception(type(exc), exc, exc.__traceback__))
+            self._controlQueue.put_nowait(('JOB', 'EXCEPTION', exc))
         except KeyboardInterrupt:
             log.cc(1, "Ctrl-c occurred in job worker loop")
         finally:
+            log.cc(1, "TERMINATING")
+            # Orderly shutdown, clean up queues  
             # Know the input and out queues are empty or hard stop, so 
             # cancel_join_thread (don't wait for them to clear)
             self._inputQueue.close()
@@ -89,7 +98,7 @@ class Worker( Process ):
             # If items on the control queue, join_thread to make sure queue is flushed
             self._controlQueue.close()
             self._controlQueue.join_thread()
-            log.cc(1, "TERMINATING")
+            log.cc(2, "TERMINATED")
 
     def _run(self):
         '''
@@ -140,18 +149,19 @@ class Worker( Process ):
             pass
         finally:
             if 'EXIT' == myCommand:
-                log.cc(1, "COMMAND: EXIT")
+                log.cc(2, "COMMAND: EXIT")
                 self._continueProcessing = False
                 exitNow = True
+
             elif 'WORK_DONE' == myCommand:
-                log.cc(1, "COMMAND: WORK_DONE")
+                log.cc(2, "COMMAND: WORK_DONE")
                 self._continueProcessing = False
-            for target, command, payload in otherCommands:
-                log.cc(3, "putting {}, {}".format(target, command))
-                try:
-                    self._controlQueue.put((target, command, payload), True, CONTROL_QUEUE_TIMEOUT)
-                except Full:
-                    raise utils.JobException("FATAL EXCEPTION - Control Queue full, can't put")
+
+            if otherCommands:
+                log.cc(4, "replacing conmmands - {}".format(otherCommands))
+                utils.put_commands(self._controlQueue, otherCommands, 
+                                    CONTROL_QUEUE_TIMEOUT)
+
         return exitNow
 
     #-------------------------------------------------------------------------
@@ -207,12 +217,12 @@ class Worker( Process ):
                         self.file_measured_callback)
 
         except utils.FileMeasureError as e:
-            log.traceback(2)
+            log.stack(2)
             self._currentFileErrors.append(
                     uistrings.STR_ErrorMeasuringFile.format(self._currentFilePath, str(e)))
             continueProcessing = not options.breakOnError
         except EnvironmentError as e:
-            log.traceback(2)
+            log.stack(2)
             if e.errno == EACCES:
                 self._currentFileErrors.append(
                         uistrings.STR_ErrorOpeningMeasureFile_Access.format(self._currentFilePath))

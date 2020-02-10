@@ -7,8 +7,10 @@
 '''
 
 import re
-from framework import log
-from framework import basemodule
+
+from code_surveyor.framework import log
+from code_surveyor.framework import basemodule
+
 
 class _searchMixin( object ):
 
@@ -30,7 +32,6 @@ class _searchMixin( object ):
     def _cs_config_options(cls):
         return cls.ConfigOptions_Search
 
-
     #-------------------------------------------------------------------------
     # Overloadable functions needed to provide super calls for to
     # ensure we don't break MRO chain
@@ -41,7 +42,6 @@ class _searchMixin( object ):
     def _measure_line(self, line, onCommentLine):
         super(_searchMixin, self)._measure_line(line, onCommentLine)
 
-
     #-------------------------------------------------------------------------
     # Overrides used in search behavior
 
@@ -50,7 +50,6 @@ class _searchMixin( object ):
 
         # Default RE compile options for search REs loaded from config files
         self._searchReFlags = re.IGNORECASE | re.VERBOSE
-
 
     def add_param(self, param, rawParam):
         '''
@@ -69,7 +68,6 @@ class _searchMixin( object ):
         log.search(2, "Adding {} Search: {} ({})".format(bool(positiveSearch), param, self._searchReFlags))
         return (positiveSearch, ' '.join(rawParam.split()), regEx)
 
-
     #-------------------------------------------------------------------------
     # Methods used by
 
@@ -86,7 +84,6 @@ class _searchMixin( object ):
             else:
                 negativeSearches[rawParam] = [regEx, 0]
         return positiveSearches, negativeSearches
-
 
     def _first_match(self, searchTarget, positiveSearches, negativeSearches, negativeFirst=False):
         '''
@@ -108,7 +105,6 @@ class _searchMixin( object ):
                     matchTuple = None
         return matchTuple
 
-
     #-------------------------------------------------------------------------
     # Internal implementation
 
@@ -126,7 +122,6 @@ class _searchMixin( object ):
                 return posString, match
 
         return None
-
 
     def _is_negative_match(self, searchTarget, negativeSearches):
         for negString, (negRegExp, negCount) in negativeSearches.items():

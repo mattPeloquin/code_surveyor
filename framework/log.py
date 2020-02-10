@@ -8,9 +8,10 @@
 import os
 import sys
 import logging
+import traceback
 import threading
 import multiprocessing
-from framework import utils
+from . import utils
 
 #-----------------------------------------------------------------
 #  Public Interface
@@ -26,7 +27,7 @@ def code(level, msg): pass
 def notcode(level, msg): pass
 def search(level, msg):  pass
 def temp(level, msg):  pass
-def traceback(level = 1): pass
+def stack(level = 1): pass
 
 MODE_NBNC = 'nbnc'
 MODE_NOT_CODE = 'not_code'
@@ -41,25 +42,25 @@ DEFAULT_PRINT_WIDTH = 78
 
 # The main process sets up context that it can pass to children
 def init_context(level, modes=[], printLen=DEFAULT_PRINT_WIDTH, lock=None,
-                    out=None, traceback=True):
-    global _level, _modes, _printLen, _writer, _tracebackOn
+                    out=None, stack=True):
+    global _level, _modes, _printLen, _writer, _stackOn
     _level = int(level)
     _modes = list(modes)
     _printLen = int(printLen)
     _writer = DebugWriter(lock, out)
-    _tracebackOn = bool(traceback)
+    _stackOn = bool(stack)
     _init()
 
 def get_context():
     if _level > 0:
         return (_level, _modes, _printLen,
-                _tracebackOn, _writer.out.name, _writer.lock)
+                _stackOn, _writer.out.name, _writer.lock)
     else:
         return (_level, _modes, None,  None, None, None)
 
 def set_context(context):
-    global _level, _modes, _printLen, _tracebackOn, _writer
-    (_level, _modes, _printLen, _tracebackOn, out, lock) = context
+    global _level, _modes, _printLen, _stackOn, _writer
+    (_level, _modes, _printLen, _stackOn, out, lock) = context
     if _level > 0:
         _writer = DebugWriter(lock, out)
         _init()
@@ -86,8 +87,8 @@ _modes = []
 # The writer object determines what to write to
 _writer = None
 
-# Support turning traceback on and off
-_tracebackOn = False
+# Support turning stack traceback on and off
+_stackOn = False
 
 # Max str width for debug trace lines
 _printLen = 0
@@ -112,7 +113,7 @@ def _init():
 # For perfomance, assign the default empty functions to pass, and only
 # reassign when tracing has been initialized
 _traceMethods = set(['msg', 'file', 'config', 'cc',
-        'code', 'notcode', 'search', 'temp', 'enum', 'traceback', ])
+        'code', 'notcode', 'search', 'temp', 'enum', 'stack', ])
 def _add_debug_funcs():
     for (key, value) in globals().items():
         if key in _traceMethods:
@@ -128,9 +129,8 @@ def _notcode(level, msg):   _debug_log_mode(level, msg, MODE_NOT_CODE)
 def _search(level, msg):    _debug_log_mode(level, msg, MODE_SEARCH)
 def _temp(level, msg):      _debug_log_mode(level, msg, MODE_TEMP)
 
-def _traceback(level = 1):
-    if _tracebackOn and _level >= level:
-        import traceback
+def _stack(level = 1):
+    if _stackOn and _level >= level:
         _debug_log_raw("\n\nERROR -- Stack Traceback below:\n{}".format(
             traceback.format_exc()))
 
@@ -209,7 +209,7 @@ class DebugWriter( object ):
 
         except:
             sys.stdout.write("ERROR> Exception thrown in DebugWriter")
-            import traceback; traceback.print_exc()
+            traceback.print_exc()
             raise
         finally:
             if lockAquired:

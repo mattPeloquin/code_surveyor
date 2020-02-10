@@ -7,11 +7,11 @@
 import os
 import re
 
-from framework import configentry
-from framework import fileext
-from framework import uistrings
-from framework import log
-from framework import utils
+from . import configentry
+from . import fileext
+from . import uistrings
+from . import log
+from . import utils
 
 # Special identifiers used with the config file
 CONFIG_LINE_CONTINUE = r'\\'
@@ -56,7 +56,6 @@ class ConfigReader( object ):
                 r"^ \s*" + CONFIG_DELIM_INCLUDE + configentry.CONFIG_DELIM_CHAR +
                 "(\S+?)" + configentry.CONFIG_DELIM_CHAR + "(.*)", self._reFlags)
 
-
     def read_file(self, filePath):
         '''
         Read a Surveyor configuration file and return a list of ConfigEntrys
@@ -72,11 +71,9 @@ class ConfigReader( object ):
         except Exception as e:
             raise utils.ConfigError(uistrings.STR_ErrorConfigFile.format(filePath, str(e)))
 
-
     def _read_file(self, filePath, configEntries):
         with open(filePath, 'r') as configFile:
             return self._parse_file(configFile, configEntries)
-
 
     def _parse_file(self, configFile, configEntries):
         '''
@@ -189,7 +186,7 @@ class ConfigReader( object ):
                     log.config(2, "LoadedParam: {} => {}".format(
                             configEntry.module.__class__.__name__, paramTuple))
                 except Exception as e:
-                    log.traceback()
+                    log.stack()
                     raise utils.ConfigError(uistrings.STR_ErrorConfigParam.format(
                             str(configEntry), rawLine, str(e)))
 
@@ -211,14 +208,13 @@ class ConfigReader( object ):
                         configEntries.append(configEntry)
 
                 except Exception as e:
-                    log.traceback()
+                    log.stack()
                     raise utils.ConfigError(uistrings.STR_ErrorConfigEntry.format(
                             rawLine, str(e)))
 
             # Loop to next line
 
         return configEntries
-
 
     def _validate_file(self, configEntries):
         if not configEntries:
@@ -227,9 +223,8 @@ class ConfigReader( object ):
             try:
                 self._validate_entries(configEntries)
             except Exception as e:
-                log.traceback()
+                log.stack()
                 raise utils.ConfigError(uistrings.STR_ErrorConfigValidate.format(str(e)))
-
 
     #-------------------------------------------------------------------------
 
@@ -254,7 +249,6 @@ class ConfigReader( object ):
 
         return line
 
-
     def _validate_line(self, configEntry):
         '''
         Is the module being asked to do what it was designed to do?
@@ -265,7 +259,6 @@ class ConfigReader( object ):
             log.msg(1, "Failed module validate measureOk/verbOk: {}/{}".format(measureOk, verbOk))
             raise utils.ConfigError(uistrings.STR_ErrorConfigInvalidMeasure.format(
                     configEntry.verb, configEntry.measureFilter))
-
 
     def _validate_entries(self, configEntries):
         '''

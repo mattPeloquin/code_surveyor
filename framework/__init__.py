@@ -58,3 +58,61 @@
                         ChildProcesses-JobWorker 
 '''
 __version__ = '7'
+
+import os
+import sys
+from pathlib import Path
+
+'''
+    Support relative import paths and usage of surveyor.py and framework module as 
+    both run-time script and package
+'''
+_file = Path(__file__).resolve()
+sys.path.append( str(_file.parents[2]) )
+import code_surveyor.framework
+__package__ = 'code_surveyor.framework'
+
+'''
+    Surveyor Dir
+
+    A Py2Exe compiled program, sys.argv[0] will not always return fully 
+    qualified path, so use sys.executable, which will.
+'''
+
+StartupPath = None
+
+def surveyor_dir():
+    '''
+    Return the directory that the surveyor script was loaded from
+    '''
+    assert StartupPath is not None
+    return StartupPath
+
+def init_surveyor_dir(arg0):
+    '''
+    This must be called before calling surveyor_dir
+    '''
+    global StartupPath
+    if running_as_exe():
+        StartupPath = sys.executable
+    else:
+        StartupPath = arg0
+    StartupPath = os.path.abspath(os.path.dirname(StartupPath))
+
+def running_as_exe():
+    '''
+    If the frozen attribute is present, we're in py2exe
+    otherwise we're in script
+    '''
+    return hasattr(sys, "frozen")
+
+def runtime_ext():
+    return "" if running_as_exe() else ".py"
+
+def runtime_dir():
+    '''
+    Return the directory that the job is being run from
+    Surveyor does not manipulate CWD, so we assume it is accurate
+    '''
+    return os.path.abspath(os.getcwd())
+

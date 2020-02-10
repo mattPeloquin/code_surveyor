@@ -31,6 +31,11 @@
       - The csmodules intentionally do not follow Python's style guidelines
         for lowercase naming to help differentiate them from generally
         callable Python modules
+
+    Al Python modules in csmodules are loaded dynamically by the framework, so 
+    are only imported in code for inheritance within this package, so
+    do not need fixup of package name (will only import using the 
+    csmodules absolute name vs. relative import paths). 
 '''
 __version__ = '7'
 

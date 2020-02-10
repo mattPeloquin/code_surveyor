@@ -6,9 +6,8 @@
     analysis and aggregation with the "-g" command
 '''
 
+from code_surveyor.framework import utils
 from .Code import Code
-
-from framework import utils
 
 
 class Depends( Code ):
