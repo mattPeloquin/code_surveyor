@@ -1,4 +1,4 @@
-#---- Code Surveyor, Copyright 2019 Matt Peloquin, MIT License
+#---- Code Surveyor, Copyright 2020 Matt Peloquin, MIT License
 '''
     Write the output of Surveyor measures
     Supports various output formats and the creation of multiple files

@@ -1,5 +1,5 @@
 #-*- coding: latin-1 -*-
-#---- Code Surveyor, Copyright 2019 Matt Peloquin, MIT License
+#---- Code Surveyor, Copyright 2020 Matt Peloquin, MIT License
 '''
     Surveyor Application UI Strings
 
@@ -105,7 +105,7 @@ STR_ErrorConfigDupeMeasures = """
 #   Command Line App UI Strings
 
 STR_Intro = """
- Code Surveyor
+Code Surveyor
 """
 STR_Divider = "\n"
 STR_FolderMeasured = " Measuring: {}\n"
@@ -135,8 +135,8 @@ STR_Error = """
 """
 STR_ErrorList = """
 
- ===  MEASUREMENTS ABORTED FOR {0} FILES  (first {1} displayed below)  ===
-    {2}
+ ===  MEASUREMENTS ABORTED FOR {} FILES  (first {} displayed below)  ===
+    {}
 
 
 """
@@ -164,18 +164,18 @@ STR_SummaryDetailedTitle = """
  Summary of key measurements:
 """
 STR_SummaryDetailedFileTitle = """
- Summary metrics sorted for top {0} file types:
+ Summary metrics sorted for top {} file types:
 """
 STR_TotalDupes = """
- There were {0} files with duplicates and {1} duplicates in total
+ There were {} files with duplicates and {} duplicates in total
  See output results for details, duplicate files are not included in measures
 """
 STR_AggregateKeyError = """
- There was a problem aggregating the measure name: {0}
+ There was a problem aggregating the measure name: {}
  Check that the measure name exists in the measure results
 """
 STR_AggregateThresholdKeyError = """
- The aggregate threshold key is not in the aggregates: {0}
+ The aggregate threshold key is not in the aggregates: {}
 """
 STR_SummaryDetailedMeasureValue = "   {0}{1}  {2:n}\n"
 STR_SummaryDetailedMeasure =      "   {0}{1}\n"
@@ -187,11 +187,11 @@ STR_SummaryRunTime = "\nRun time: {0:.1f} seconds\n"
 
 STR_HelpText_Intro = (
 """
- Configurable and extensible scanning across languages. Non-Blank,
- Non-Comment (NBNC) lines of code, searching, and other measures (see
- "surveyor.code" for more details).
- A csv file containing per-file measures is created. Customized config files
- can (should) be placed in your folders to override "surveyor.code". 
+ Configurable and extensible scanning across languages.
+ Non-Blank, Non-Comment (NBNC) lines of code, complexity metrics, searching, 
+ and other measures (see "surveyor.code" for more details).
+ Creates a csv file with per-file measures. 
+ Place customized config files in folders to override "surveyor.code". 
  """)
 
 CMDARG_LEADS = '-'
@@ -228,11 +228,12 @@ STR_HelpText_Usage = """
 STR_HelpText_Options = """
     [pathToMeasure]   Measure path(s) other than the current one
     [fileFilters]     File type filters (documented in surveyor.examples)
+                      Folders and files prefixed with '.' skipped by default
     -delta <path>     Measure diffs and additions relative to <path> (+)
     -config <name>    Look for config files called <name> (+)
 
     -a[mode]          Scan all files, ignoring config file settings (+)
-    -s<mode> <filt>   Skip files due to binary, size, name, locaiton, etc. (+)
+    -s<mode> <filt>   Skip files due to binary, size, name, location, etc. (+)
     -inclPath <filt>  Include only files in paths that match filter (+)
     -nonRecursive     Only scan <pathToMeasure>, do not scan sub-folders
     -breakOnError     Stop scanning if file error is encountered
@@ -340,7 +341,7 @@ STR_HelpText_Scan_All = """
  Scan All, ignoring config files:
 
     Normal Surveyor measurement is dictated by config files -- only file
-    extensions that have been explicity configured are measured.
+    extensions that have been explicitly configured are measured.
     Scanning is useful to ensure that all file types you want to consider
     are included when tuning config files.
 
@@ -513,8 +514,8 @@ STR_HelpText_Filter = """
 
     -f metadata     When 'metadata' is the filter, all measures that require
                     opening the file will be skipped, but metadata output will
-                    still be collected on path, date, etc. Allos for very
-                    fast scanning of all files in a tree.
+                    still be collected on path, date, etc. 
+                    For fast scanning of all files in a tree.
 """
 
 STR_HelpText_Aggregates = """

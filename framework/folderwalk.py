@@ -1,4 +1,4 @@
-#---- Code Surveyor, Copyright 2019 Matt Peloquin, MIT License
+#---- Code Surveyor, Copyright 2020 Matt Peloquin, MIT License
 '''
     Logic for walking folders, selecting files to be processed,
     and providing the configEntry information for the files.
@@ -93,7 +93,7 @@ class FolderWalker( object ):
 
         validFolder = True
 
-        # First verfiy this folder is not to be skipped
+        # First verify this folder is not to be skipped
         if self._skipFolders:
             _root, currentFolder = os.path.split(folderName)
             for folderPattern in self._skipFolders:

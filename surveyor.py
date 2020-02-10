@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-#---- Code Surveyor, Copyright 2019 Matt Peloquin, MIT License
+#---- Code Surveyor, Copyright 2020 Matt Peloquin, MIT License
 '''
     Code Surveyor command line application
-    See README for detals
+    See README for details
 '''
 
 import sys
@@ -19,23 +19,23 @@ if False:
 
 #  Run surveyor and return status to the shell
 if __name__ == '__main__':
-    
+
     # Setup OS sensitive items
     printWidth = None
-    try:        
+    try:
         currentPlatform = platform.system()
 
         # Try to get console width
         # Take one off to avoid line overrun
         columns, _rows = shutil.get_terminal_size(fallback=(80, 24))
-        printWidth = columns - 1 
+        printWidth = columns - 1
 
         # Support multiprocessing for Windows exe
         multiprocessing.freeze_support()
 
     except Exception:
-        # If something falls apart, try to carry on with defaults        
-        pass 
+        # If something falls apart, try to carry on with defaults
+        pass
 
     # Run the measurement job, always returning result to the shell
     SUCCESS = 0

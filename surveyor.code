@@ -1,4 +1,4 @@
-#---- Code Surveyor, Copyright 2019 Matt Peloquin, MIT License
+#---- Code Surveyor, Copyright 2020 Matt Peloquin, MIT License
 #
 #  Code Surveyor default config file
 #
@@ -30,20 +30,22 @@
 
 measure  Code   *       NO_EXT;*.sh;*.bat;*.cmd         shell       code    OPT:IGNORE_BINARY
 measure  Code   *       *.py;*.pyd;*.pyw                python      code    OPT:PYTHON_TRIPLE_COMMENTS
-measure  Code   *       *.c;*.cpp;*.cc;*.cxx            c_c++       code    definition
-measure  Code   *       *.h;*.hpp;*.hxx;*.hh            c_c++       code    declaration
+measure  Code   *       *.c                             c           code    definition
+measure  Code   *       *.h                             c           code    declaration
+measure  Code   *       *.cpp;*.cc;*.cxx                c++         code    definition
+measure  Code   *       *.hpp;*.hxx;*.hh                c++         code    declaration
 measure  Code   *       *.java                          java        code    java
 measure  Code   *       *.cs                            csharp      code    .net
 measure  Code   *       *.go                            go          code
 measure  Code   *       *.js;*.mjs;*.jsx                javascript  code    OPT:ADD_LINE_SEP:; # Split lines
 measure  Code   *       *.ts;*.tsx                      typescript  code    OPT:ADD_LINE_SEP:;
-measure  Web    *       *.css;*.less;*.scss;*.sass      css         code
 measure  Code   *       *.sql;*.ddl;*.pls;*.pks;*.pck   sql         code
 measure  Code   *       *.tbl;*.sp;*.proc;*.trg;*.view  sql         code
+measure  Web    *       *.php;*.php?;*.cgi;*.inc        php         code
 measure  Code   *       *.rb;*.rjs;*.rabl;*.erb;*.rake  ruby        code
+measure  Web    *       *.css;*.less;*.scss;*.sass      css         code
 measure  Code   *       *.m;*.mm                        objectivec  code
 measure  Code   *       *.pl;*.pm;*.ps;*.t              perl        code    # Note potential conflict with postscript .ps files
-measure  Web    *       *.php;*.php?;*.cgi;*.inc        php         code
 measure  Code   *       *.swift                         swift       code
 measure  Code   *       *.kt;*.ktm;*.kts                kotlin      code
 measure  Code   *       *.elm                           elm         code
@@ -59,6 +61,7 @@ measure  Code   *       *.sol                           solidity    code
 measure  Code   *       *.groovy                        groovy      code
 measure  Code   *       *.coffee                        coffee      code
 measure  Code   *       *.lua                           lua         code
+measure  Code   *       *.f;*.ftn;*.for;*.f90           fortran     code
 measure  Code   *       *.as                            flex        code    # fla files somtimes can be included if mostly text
 measure  Code   *       *.xsl;*.xslt                    xsl         code
 measure  Code   *       *.cls;*.page;*.tab;*.trigger    apex        code    # Force.com Apex and metadata (note conflict with VB6 .cls)
@@ -66,7 +69,6 @@ measure  Code   *       *.workflow;*.object;*.component apex        code    OPT:
 measure  Code   *       *.tcl                           tcl         code
 measure  Code   *       *.vbs;*.vba                     vba         code
 measure  Code   *       *.cfc                           coldfusion  code
-measure  Code   *       *.f;*.ftn;*.for;*.f90           fortran     code
 measure  Code   *       *.ada;*.ads;*.adb               ada         code
 measure  Code   *       *.cla;*.cln;*.txd;*.txa         clarion     code
 measure  Code   *       *.aj                            aspectjava  code
@@ -98,10 +100,6 @@ measure  Web    *       *.tml                           tapestry    code
 measure  Web    *       *.cfm                           coldfusion  code
 measure  Web    *       *.asp                           asp         code
 
-# Custom Surveyor modules can be built for non-standard comment syntax
-measure  customCobol  * *.cob;*.cbl;*.cobol             cobol       code
-measure  customDelphi * *.pas                           delphi      code
-
 # Visual Basic requires specific comments and machine code detection
 measure  Code   *       *.vb                            vb.net      code    .net  \
     OPT:COMMENT_LINE:[']+(?![^']+'\s*$)\
@@ -111,6 +109,10 @@ measure  Code   *       *.vb                            vb.net      code    .net
 #measure  Code   *       *.bas;*.frm;*.ctl;*.mod         vb6         code    \
 #    OPT:COMMENT_LINE:[']+(?![^']+'\s*$)\
 #    OPT:MACHINE_ADD_DETECT:[re.compile(r'^version\s+[1-6]\.0',re.IGNORECASE),re.compile(r'^end',re.IGNORECASE)]
+
+# Custom Surveyor modules can be built for non-standard comment syntax
+measure  customCobol  * *.cob;*.cbl;*.cobol             cobol       code
+measure  customDelphi * *.pas                           delphi      code
 
 # Other file types that can overlap - commented out due to extension conflicts
 # measure  Code   *       *.m                           matlab      code

@@ -1,9 +1,9 @@
-#---- Code Surveyor, Copyright 2019 Matt Peloquin, MIT License
+#---- Code Surveyor, Copyright 2020 Matt Peloquin, MIT License
 '''
     Surveyor Job
 
     Executes a measurement job against a folder tree, using jobworker processes
-    to read files and delegate mesurement tasks to Surveyor modules.
+    to read files and delegate measurement tasks to Surveyor modules.
 '''
 
 import os
@@ -19,6 +19,9 @@ from . import configstack
 from . import utils
 from . import log
 
+# Prefixing files/folders to ignore with '.' is almost universal now
+DEFAULT_FOLDERS_TO_SKIP = ['.?*']
+DEFAULT_FILES_TO_SKIP = ['.?*']
 
 # Leave a core open for the main app and jobOut threads, which
 # are running under the process we execute on
@@ -52,8 +55,8 @@ class Options( object ):
         self.fileFilters = []
         self.deltaPath = None
         self.includeFolders = []
-        self.skipFolders = []
-        self.skipFiles = []
+        self.skipFolders = DEFAULT_FOLDERS_TO_SKIP
+        self.skipFiles = DEFAULT_FILES_TO_SKIP
         self.recursive = True
         self.numWorkers = DEFAULT_NUM_WORKERS
         self.breakOnError = False

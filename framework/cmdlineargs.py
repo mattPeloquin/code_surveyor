@@ -1,4 +1,4 @@
-#---- Code Surveyor, Copyright 2019 Matt Peloquin, MIT License
+#---- Code Surveyor, Copyright 2020 Matt Peloquin, MIT License
 '''
     Code Surveyor command argument processing
 
@@ -38,14 +38,12 @@ MeasureAll = [("MeasureAll", 'measure NBNC file.* *')]
 
 # Used with the -ad option
 MeasureCode = [("MeasureCode", 'measure Code * * OPT:MEASURE_EMPTIES')]
-ScanAllCodeFoldersToSkip = ['.?*', 'cvs']
-ScanAllCodeFilesToSkip = ['.*']
 
 
 class SurveyorCmdLineArgs( object ):
     '''
-    With Python V2.7, Surveyor's command line processing needs could be met
-    with an argsparse implementaiton. Some day...
+    Surveyor's command line processing predated v2.7, which is why 
+    argsparse is not used. Some day...
     '''
 
     def __init__(self, cmdArgs, surveyorApp):
@@ -350,8 +348,6 @@ class SurveyorCmdLineArgs( object ):
                 self.ignoreSize = IGNORE_SIZE_DEFAULT
                 self.ignoreBinary = True
                 self._app._ignoreNonCode = True
-                self._app._jobOpt.skipFolders = ScanAllCodeFoldersToSkip
-                self._app._jobOpt.skipFiles = ScanAllCodeFilesToSkip
 
             # Special case, don't open files, just do metadata
             if scanOpt in CMDARG_SCAN_ALL_METADATA:

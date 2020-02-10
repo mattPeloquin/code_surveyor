@@ -1,20 +1,20 @@
-#---- Code Surveyor, Copyright 2019 Matt Peloquin, MIT License
+#---- Code Surveyor, Copyright 2020 Matt Peloquin, MIT License
 '''
     Surveyor NBNC Code measurement module
 
-    Implements Non-Blank, Non-Comment (NBNC) Lines Of Code (LOC) metrics
+    Non-Blank, Non-Comment (NBNC) Lines Of Code (LOC) metrics
     across a wide range of file types. Provides base implementation for
     all Surveyor NBNC line-based code analysis.
 
     NBNC LOC is a strong proxy for size across technologies. NBNC lines
-    are calculated by subracting blank and comment lines from total lines for
+    are calculated by subtracting blank and comment lines from total lines for
     REASONABLY accurate measures of languages with similar comment syntax:
 
         - Single-line comments: // # -- ' rem ; ! %
         - Multi-line: /* */, <!-- -->, --[[ ]], #| |#, {- -}
             (Python multi-line added in config file)
 
-    Surevyor uses the additional assumptions:
+    Surveyor uses the additional assumptions:
 
         - A 'Blank' line contains only whitepace or symbol
         - Line continuation and multiple statements a line are IGNORED;
@@ -25,7 +25,7 @@
         - Inline comments ignored (the Code csmodule detects them)
 
     Languages that do not follow these comment conventions will require
-    modifcation of the regular expressions (see customXYZ.py csmodules)
+    modification of the regular expressions (see customXYZ.py csmodules)
 '''
 
 import re
