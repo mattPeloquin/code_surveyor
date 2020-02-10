@@ -169,12 +169,14 @@ class SurveyorCmdLine( object ):
                             {'self': self}, PROFILE_FILE + "Main")
                 else:
                     self._execute_job()
-                success = not self._errorList
             except KeyboardInterrupt as e:
                 self._keyboardInterrupt = e
             except Exception as e:
                 self._finalException = e
             finally:
+                # Handle report of errors and exceptions 
+                self._errorList += [ str(e) for e in self._job.exceptions ]
+                success = not self._errorList
                 self._display_summary()
                 self._cleanup()
         return success
