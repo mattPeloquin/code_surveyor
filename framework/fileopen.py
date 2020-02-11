@@ -64,18 +64,16 @@ def _open_file(filePath, forceAll):
     This isn't foolproof - files that use different encodings farther 
     in may blow up later if decoded, but that is rare.
     """
-
-    # Use buffering to reduce the cost of open on larger files
-    fileObj = open(filePath, 'r', buffering=2^24, encoding='utf-8')
-
-    # Grab the first bytes of the file
+    fileObj = None
     start = None
     try:
+        # Use buffering to reduce the cost of open on larger files
+        fileObj = open(filePath, 'r', buffering=2^24, encoding='utf-8')
         start = _get_file_start(fileObj)
-
     except UnicodeDecodeError as e:
-        fileObj.close()
-        # See if we can lookup Unicode BOM
+        if fileObj:
+            fileObj.close()
+        # Try to lookup Unicode BOM
         try:
             fileBinary = open(filePath, 'rb', buffering=2^8)
             startBytes = _get_file_start(fileBinary)
