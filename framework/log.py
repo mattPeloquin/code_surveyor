@@ -7,6 +7,7 @@
 
 import os
 import sys
+import types
 import logging
 import traceback
 import threading
@@ -142,16 +143,18 @@ def _debug_log_mode(level, msg, debugMode):
 def _debug_log(level, msg):
     if isinstance(msg, str):
         _debug_write(level, msg)
+    elif type(msg) == types.FunctionType:
+        _debug_write(level, msg())
     else:
-        _debug_enum(level, msg)
-
-def _debug_enum(level, obj):
-    try:
-        for key, value in obj.items():
-            _debug_write(level, "  " + str(key) + ": " + str(value))
-    except AttributeError:
-        for item in obj:
-            _debug_write(level, "  " + str(item))
+        try:
+            try:
+                for key, value in obj.items():
+                    _debug_write(level, "  " + str(key) + ": " + str(value))
+            except AttributeError:
+                for item in obj:
+                    _debug_write(level, "  " + str(item))
+        except Exception:
+            _debug_write(level, str(msg))
 
 def _debug_write(level, msg):
     if _level >= level:

@@ -24,12 +24,13 @@ DEFAULT_FOLDERS_TO_SKIP = ['.?*']
 DEFAULT_FILES_TO_SKIP = ['.?*']
 
 # Leave a core open for the main app and jobOut threads, which
-# are running under the process we execute on
+# running under the command shell process 
 DEFAULT_NUM_WORKERS = max(1, multiprocessing.cpu_count()-1)
 
 # Seconds to wait at various points
-MAIN_PROCESSING_SLEEP = 0.1
-WORKER_EXIT_TIMEOUT = 0.5
+MAIN_PROCESSING_SLEEP = 0.2
+WORKER_EXIT_TIMEOUT = 0.4
+WORKER_EXIT_TRIES = 8
 JOBOUT_EXIT_TIMEOUT = 1
 TASK_FULL_TIMEOUT = 0.4
 
@@ -83,10 +84,13 @@ class Job( object ):
 
         # Keep track of (and allow access to) raw file metrics
         self.numFolders = 0
-        self.numFoldersMeasured = 0
         self.numUnfilteredFiles = 0
         self.numFilteredFiles = 0
         self.numFilesToProcess = 0
+
+        # Exceptions that occurred in workers are collected and displayed
+        # Unlike errors, exceptions will not generate rows in output
+        self.exceptions = []
 
         # Queues to communicate with Workers, and the output thread
         self._taskQueue = multiprocessing.Queue()
@@ -129,8 +133,8 @@ class Job( object ):
 
     def add_folder_files(self, currentDir, deltaPath, filesAndConfigs, numUnfilteredFiles):
         '''
-        This is a callback from folderwalk used to put a set of filesAndConfigItems
-        into one or more WorkPackages to send to jobs. At this point files have already
+        Callback from folderwalk that puts a set of filesAndConfigItems into one or 
+        more WorkPackages to send to jobs. At this point files have already
         been filtered against both job options and the config items.
         '''
         self.numFolders += 1
@@ -147,20 +151,14 @@ class Job( object ):
     #-------------------------------------------------------------------------
 
     def run(self):
-        try:
-            self._outThread.start()
-            self._fill_work_queue()
-            self._wait_process_packages()
-            self._wait_output_finish()
-        except KeyboardInterrupt:
-            self._keyboardInterrupt()
-        except Exception as e:
-            self._exception(e)
-        finally:
-            self._wait_then_exit()
+        self._outThread.start()
+        self._fill_work_queue()
+        self._wait_process_packages()
+        self._wait_output_finish()
+        self._wait_then_exit()
 
     def _fill_work_queue(self):
-        log.cc(1, "Starting to fill task queue")
+        log.cc(1, "Starting to fill task queue...")
         for pathToMeasure in self._pathsToMeasure:
             if self._check_command():
                 self._folderWalker.walk(pathToMeasure)
@@ -168,42 +166,33 @@ class Job( object ):
             self._send_current_package()
 
     def _wait_process_packages(self):
-        log.cc(1, "Task queue is complete, processing packages")
+        log.cc(1, "Task queue complete, waiting for workers to finish...")
         while self._check_command() and self._task_queue_size() > 0:
             time.sleep(MAIN_PROCESSING_SLEEP)
             self._status_callback()
-        if self._check_command():
-            self._send_workers_command('WORK_DONE')
-        else:
-            self._send_workers_command('EXIT')
+            log.cc(2, "Task queue size: " + str(self._task_queue_size()))
 
     def _wait_output_finish(self):
+        log.cc(1, "Workers finished, waiting for output to finish...")
         self._send_output_command('WORK_DONE')
         while self._check_command() or self._outThread.is_alive():
             self._outThread.join(JOBOUT_EXIT_TIMEOUT)
             self._status_callback()
             self._continueProcessing = not bool(self._controlQueue.empty())
 
-    def _keyboardInterrupt(self):
-        log.cc(1, "Ctrl-c occurred in MAIN loop")
-        self._send_output_command('EXIT')
-        raise
-
-    def _exception(self, exc):
-        log.cc(1, "EXCEPTION -- EXITING JOB...")
+    def _wait_then_exit(self):
+        log.cc(1, "Waiting to cleanup workers and output thread...")
         self._send_workers_command('EXIT')
         self._send_output_command('EXIT')
-        log.stack(3)
-        raise exc
-
-    def _wait_then_exit(self):
-        log.cc(1, "Waiting to exit workers and output thread...")
         for worker in self._workers():
-            while worker.is_alive():
+            tries = 0
+            while worker.is_alive() and tries < WORKER_EXIT_TRIES:
                 self._status_callback()
                 worker.join(WORKER_EXIT_TIMEOUT)
                 log.cc(2, "Worker {} is_alive: {}".format(
                         worker.name, worker.is_alive()))
+                self._check_command()
+                tries += 1
         self._outThread.join(JOBOUT_EXIT_TIMEOUT)
         self._close_queues()
         log.cc(1, "TERMINATING")
@@ -235,7 +224,9 @@ class Job( object ):
                     self.size_bytes() >= QUEUE_PACKAGE_MAX_BYTES)
 
     def _task_queue_size(self):
-        remainingPackages = self._taskPackagesSent - self._outThread.taskPackagesReceived
+        remainingPackages = ( self._taskPackagesSent - 
+                self._outThread.taskPackagesReceived -
+                len( self.exceptions ) )
         assert remainingPackages >=0, "In/Out Queues out of sync"
         return remainingPackages
 
@@ -248,7 +239,6 @@ class Job( object ):
         '''
         if not filesAndConfigs:
             return
-        self.numFoldersMeasured += 1
 
         for fileName, configEntrys in filesAndConfigs:
 
@@ -334,27 +324,28 @@ class Job( object ):
         try:
             while self._continueProcessing:
                 (target, command, payload) = self._controlQueue.get_nowait()
-                log.cc(4, "check_command - {}, {}".format(target, command))
+                log.cc(4, "command check: {}, {}".format(target, command))
                 if target == 'JOB':
                     if 'ERROR' == command:
                         # Error notifications in the control queue are only used to support
-                        # break on error functionality -- the error info itself will be handled
-                        # by the output queue. Jobs with lots of errors can clog up the
-                        # control queue, so clear these out as found
+                        # break on error -- the error info is handled by the output queue. 
                         log.cc(1, "COMMAND: ERROR for file: {}".format(payload))
                         if self._options.breakOnError:
                             self._continueProcessing = False
                     elif 'EXCEPTION' == command:
+                        # Exceptions are bundled up for display to user
                         log.cc(1, "COMMAND: EXCEPTION RECEIVED")
-                        raise payload
+                        if self._options.breakOnError:
+                            self._continueProcessing = False
+                        self.exceptions.append( payload )
                 else:
                     otherCommands.append((target, command, payload))
         except Empty:
-            pass
+            log.cc(4, "command check: empty")
         finally:
             # Put any queue items removed back in the queue
             for (target, command, payload) in otherCommands:
-                log.cc(3, "putting {}, {}".format(target, command))
+                log.cc(4, "command replace: {}, {}".format(target, command))
                 self._controlQueue.put_nowait((target, command, payload))
 
         return self._continueProcessing

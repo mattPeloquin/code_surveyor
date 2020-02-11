@@ -31,8 +31,8 @@ from . import log
 from . import utils
 
 WORKER_PROC_BASENAME = "Job"
-INPUT_EMPTY_WAIT = 0.01
-CONTROL_QUEUE_TIMEOUT = 0.1
+INPUT_EMPTY_WAIT = 0.1
+CONTROL_QUEUE_TIMEOUT = 0.2
 OUT_PUT_TIMEOUT = 0.4
 
 
@@ -60,8 +60,6 @@ class Worker( Process ):
         self._dbgContext, self._profileName = context
         log.cc(2, "Initialized new process: {}".format(self.name))
 
-    #-------------------------------------------------------------------------
-
     def run(self):
         '''
         Process entry point - set up debug/profile context
@@ -76,26 +74,25 @@ class Worker( Process ):
             else:
                 self._run()
 
-        except Exception as exc:
-            # Any exception is treated as fatal and will proceed to orderly shutdown.
+        except Exception as e:
+            # Exception is treated as fatal to worker, which will do an orderly shutdown.
             # Can't pickle tracebacks, so get in-context stack dump to send back
-            log.msg(1, "EXCEPTION occurred in job worker loop")
-            log.stack(2)
-            exc._stack_trace = "".join(
-                traceback.format_exception(type(exc), exc, exc.__traceback__))
-            self._controlQueue.put_nowait(('JOB', 'EXCEPTION', exc))
+            log.msg(1, "EXCEPTION, stopping worker: " + str(e))
+            e._stack_trace = "".join(
+                traceback.format_exception(type(e), e, e.__traceback__))
+            self._controlQueue.put_nowait(('JOB', 'EXCEPTION', e))
         except KeyboardInterrupt:
             log.cc(1, "Ctrl-c occurred in job worker loop")
         finally:
             log.cc(1, "TERMINATING")
             # Orderly shutdown, clean up queues  
-            # Know the input and out queues are empty or hard stop, so 
-            # cancel_join_thread (don't wait for them to clear)
+            # Input and out queues are empty at this point (or is a hard stop),
+            # so cancel_join_thread (don't wait for them to clear)
             self._inputQueue.close()
             self._inputQueue.cancel_join_thread()
             self._outputQueue.close()
             self._outputQueue.cancel_join_thread()
-            # If items on the control queue, join_thread to make sure queue is flushed
+            # Join control queue to make sure control items are flushed
             self._controlQueue.close()
             self._controlQueue.join_thread()
             log.cc(2, "TERMINATED")
@@ -117,14 +114,13 @@ class Worker( Process ):
                 # just blocking on inputQueue.get
                 log.cc(3, "EMPTY INPUT")
                 time.sleep(INPUT_EMPTY_WAIT)
-                self._check_for_stop()
             else:
                 for workItem in workPackage:
                     if not self._measure_file(workItem):
                         self._continueProcessing = False
                         break
                 self._post_results()
-                self._check_for_stop()
+            self._check_for_stop()
 
     def _check_for_stop(self):
         '''
@@ -135,7 +131,6 @@ class Worker( Process ):
         '''
         otherCommands = []
         myCommand = None
-        exitNow = False
         try:
             while True:
                 (target, command, payload) = self._controlQueue.get_nowait()
@@ -151,18 +146,12 @@ class Worker( Process ):
             if 'EXIT' == myCommand:
                 log.cc(2, "COMMAND: EXIT")
                 self._continueProcessing = False
-                exitNow = True
-
-            elif 'WORK_DONE' == myCommand:
-                log.cc(2, "COMMAND: WORK_DONE")
-                self._continueProcessing = False
-
             if otherCommands:
                 log.cc(4, "replacing conmmands - {}".format(otherCommands))
                 utils.put_commands(self._controlQueue, otherCommands, 
                                     CONTROL_QUEUE_TIMEOUT)
 
-        return exitNow
+        return self._continueProcessing
 
     #-------------------------------------------------------------------------
     #  File measurement
@@ -173,7 +162,7 @@ class Worker( Process ):
         We store up a list of tuples with the work output for a given file
         '''
         assert filePath == self._currentFilePath, "Measure callback out of sync"
-        log.cc(3, "_file_measured_callback: {}".format(filePath))
+        log.file(3, "_file_measured_callback: {}".format(filePath))
         log.file(3, "  measures: {}".format(measures))
         log.file(3, "  analysis: {}".format(analysisResults))
         self._currentFileOutput.append((measures, analysisResults))
@@ -201,7 +190,7 @@ class Worker( Process ):
         continueProcessing = True
         try:
             for configItem in configItems:
-                if self._check_for_stop():
+                if not self._check_for_stop():
                     break
 
                 self._open_file(configItem.module, deltaFilePath)
@@ -230,6 +219,13 @@ class Worker( Process ):
                 self._currentFileErrors.append(
                         uistrings.STR_ErrorOpeningMeasureFile_Except.format(self._currentFilePath, str(e)))
             continueProcessing = not options.breakOnError
+        except Exception as e:
+            # Treat exceptions from measuring the file as file errors 
+            log.msg(1, "EXCEPTION measuring file: " + self._currentFilePath)
+            log.msg(1, str(e))
+            log.stack(4)
+            self._currentFileErrors.append(
+                    uistrings.STR_ExceptionMeasureFile.format(self._currentFilePath, str(e)))
         finally:
             self._close_current_file()
             self._file_complete()
@@ -269,9 +265,9 @@ class Worker( Process ):
             self._currentOutput.append(
                     ( self._currentFilePath, self._currentFileOutput, 
                         self._currentFileErrors ) )
-            log.cc(3, "Caching results: {}".format(self._currentFilePath))
+            log.file(3, "Caching results: {}".format(self._currentFilePath))
         else:
-            log.cc(3, "No measures for: {}".format(self._currentFilePath))
+            log.file(3, "No measures for: {}".format(self._currentFilePath))
         self._currentFileOutput = []
         self._currentFileErrors = []
 

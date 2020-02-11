@@ -42,11 +42,13 @@ STR_ErrorMeasuringFile = """
 """
 STR_ErrorOpeningMeasureFile_Except = """
     Error opening file for measurement: {}
-       {}
-"""
+       {}"""
 STR_ErrorOpeningMeasureFile_Access = """
     Exclusive lock or lack permissions: {}
 """
+STR_ExceptionMeasureFile = """
+    Exception measuring: {}
+    {}"""
 STR_ErrorFindingModule = """
     Could not find Surveyor module: {}
 """
@@ -220,7 +222,7 @@ CMDARG_DEBUG = 'z'
 STR_HelpText_Usage = """
  Usage:
 
-    surveyor{} [options] [pathToMeasure]{}[fileFilters]...
+    surveyor{0} [options] [pathToMeasure]{1}[fileFilters]...
     """
 STR_HelpText_Options = """
     [pathToMeasure]   Measure path(s) other than the current one
