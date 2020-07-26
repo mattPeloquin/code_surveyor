@@ -165,30 +165,19 @@ def strip_extended_chars(rawStr):
 _ExtendedChars = str.maketrans(dict.fromkeys(
                     ''.join([chr(byte) for byte in range(127, 255)])))
 
-def safe_ascii_string(byteStr):
+def safe_string(unknownStr):
     '''
-    If the standard ASCII conversion has a Unicode error, attempt a
-    unicode escaped encoding converted back to ASCII
+    Convert into a UTF8 string; if not possible, do a 
+    replaced convert to ASCII.
     '''
-    if byteStr is None:
+    if unknownStr is None:
         return ""
-    try:
-        return str(byteStr)
-    except UnicodeEncodeError:
-        return str(str(byteStr).encode('unicode_escape'))
-
-def safe_utf8_string(byteStr):
-    '''
-    Convert a given string into a UTF8 string; if not possible,
-    do an escapted convert to ASCII and then to UTF
-    '''
-    if byteStr is None:
-        return ""
-    try:
-        return str(byteStr, 'utf8', 'replace')
-    except UnicodeEncodeError:
-        ascii = str(byteStr).encode('string_escape')
-        return str(ascii)
+    if isinstance( unknownStr, bytes ):
+        try:
+            return str(unknownStr, 'utf-8')
+        except Exception as e:
+            return str(unknownStr, 'latin-1', 'replace')
+    return str(unknownStr)
 
 def fit_string(fullString, maxLen, replacement="...", tailLen=None):
     '''
@@ -251,11 +240,11 @@ class SurveyorPathParser( object ):
         # Initialize file name variations
         self.filePath = rawFilePath
         self.folder = os.path.dirname(rawFilePath)
-        self.dirList = [safe_ascii_string(dirItem) for dirItem in splitFilePath]
+        self.dirList = [safe_string(dirItem) for dirItem in splitFilePath]
         self.dirLength = len(self.dirList)
-        self.fileName = safe_ascii_string(fileName)
-        self.fileNameNoExt = safe_ascii_string(fileNameNoExt)
-        self.fileExt = safe_ascii_string(fileExt)
+        self.fileName = safe_string(fileName)
+        self.fileNameNoExt = safe_string(fileNameNoExt)
+        self.fileExt = safe_string(fileExt)
 
     def __repr__(self):
         return self.dirList

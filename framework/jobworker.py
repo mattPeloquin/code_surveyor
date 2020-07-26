@@ -187,18 +187,19 @@ class Worker( Process ):
         if deltaPath is not None:
             deltaFilePath = os.path.join(deltaPath, fileName)
 
+        module = None
         continueProcessing = True
         try:
             for configItem in configItems:
                 if not self._check_for_stop():
                     break
-
-                self._open_file(configItem.module, deltaFilePath)
+                module = configItem.module
+                self._open_file(module, deltaFilePath)
 
                 #
                 # Synchronus delegation to the measure module defined in the config file
                 #
-                configItem.module.process_file(
+                module.process_file(
                         self._currentFilePath,
                         self._currentFileIterator,
                         configItem,
@@ -208,24 +209,29 @@ class Worker( Process ):
         except utils.FileMeasureError as e:
             log.stack(2)
             self._currentFileErrors.append(
-                    uistrings.STR_ErrorMeasuringFile.format(self._currentFilePath, str(e)))
+                    uistrings.STR_ErrorMeasuringFile.format(
+                            self._currentFilePath, str(e)))
             continueProcessing = not options.breakOnError
         except EnvironmentError as e:
             log.stack(2)
             if e.errno == EACCES:
                 self._currentFileErrors.append(
-                        uistrings.STR_ErrorOpeningMeasureFile_Access.format(self._currentFilePath))
+                        uistrings.STR_ErrorOpeningMeasureFile_Access.format(
+                                self._currentFilePath))
             else:
                 self._currentFileErrors.append(
-                        uistrings.STR_ErrorOpeningMeasureFile_Except.format(self._currentFilePath, str(e)))
+                        uistrings.STR_ErrorOpeningMeasureFile_Except.format(
+                                self._currentFilePath, str(e)))
             continueProcessing = not options.breakOnError
         except Exception as e:
             # Treat exceptions from measuring the file as file errors 
-            log.msg(1, "EXCEPTION measuring file: " + self._currentFilePath)
-            log.msg(1, str(e))
-            log.stack(4)
+            exc = str(type(e)) + " " + str(e)
+            log.msg(1, "EXCEPTION measuring file: " + self._currentFilePath +
+                        " with " + str(module) + " -> " + exc )
+            log.stack(2)
             self._currentFileErrors.append(
-                    uistrings.STR_ExceptionMeasureFile.format(self._currentFilePath, str(e)))
+                    uistrings.STR_ExceptionMeasureFile.format(
+                            self._currentFilePath, exc))
         finally:
             self._close_current_file()
             self._file_complete()
@@ -233,20 +239,16 @@ class Worker( Process ):
 
     def _open_file(self, module, deltaFilePath):
         '''
-        Open can be an expensive operation, so for the nominal case of opening a file,
-        we'll cache the current file iterator and use multiple times if there are
-        multiple config entries to be processed for the file
-        We also cache the originally opening module to make the close symetrical.
+        Open can be expensive operation, so for the nominal case cache the
+        current file iterator for use with multiple config entries.
         '''
-        fileIterator = module.open_file(
-                        self._currentFilePath, deltaFilePath, self._currentFileIterator)
-        if fileIterator:
-            self._currentFileIterator = fileIterator
+        self._currentFileIterator = module.open_file(self._currentFilePath,
+                                     deltaFilePath, self._currentFileIterator)
 
     def _close_current_file(self):
         '''
-        Normally the fileIterator is a file handle that needs to be closed, but it may
-        just be an iterator
+        Normally the fileIterator is a file handle that needs to be closed, but 
+        it may just be an iterator
         '''
         if self._currentFileIterator:
             try:

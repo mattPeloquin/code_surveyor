@@ -19,8 +19,6 @@ from . import uistrings
 from . import utils
 from . import log
 
-NEW_LINE = "\n"
-
 
 def get_writer(typeStr, status_callback, outDir, outputFile, ignoreMetaOutfiles, itemColOrder=[]):
     '''
@@ -211,27 +209,25 @@ class Delimited( MeasureWriter ):
         # and create a column heading string based on names in the first row.
         if isNewFile:
             self._populate_col_tracker(outputRows[0], fileName)
-            self._write_delimited_string(outputFile,
-                    self._col_create_names_from_keys(fileName))
+            outputFile.writerow(self._col_create_names_from_keys(fileName))
 
         # Write rows
         for row in outputRows:
-            self._write_delimited_string(outputFile,
-                    self._col_output_list(row, fileName))
+            outputFile.writerow(self._col_output_list(row, fileName))
 
     def _get_output_file(self, measures):
-        outputFile, fileName, isNewFile = MeasureWriter._get_output_file(self, measures)
-        if isNewFile:
+        outputFile, fileName, isNew = MeasureWriter._get_output_file(self, measures)
+        if isNew:
             self._colMeasureTracker[fileName] = {}
             self._colMeasureIsDirty[fileName] = False
-        return outputFile, fileName, isNewFile
+        return outputFile, fileName, isNew
 
     def _open_file(self, fileName):
         MeasureWriter._open_file(self, fileName)
         filePath = os.path.join(self._outDir, fileName)
-        self._rawFiles[fileName] = open(filePath, 'w')
-        outWriter = csv.writer(
-            self._rawFiles[fileName], delimiter=self._delimiter, quoting=csv.QUOTE_NONNUMERIC)
+        self._rawFiles[fileName] = open(filePath, 'w', encoding='utf-8')
+        outWriter = csv.writer( self._rawFiles[fileName], delimiter=self._delimiter, 
+                                quoting=csv.QUOTE_NONNUMERIC)
         log.file(2, "Opened Delimited Output File: {}".format(filePath))
         return outWriter
 
@@ -239,15 +235,6 @@ class Delimited( MeasureWriter ):
         self._rawFiles[fileName].close()
         if self._colMeasureIsDirty[fileName]:
             self._fixup_column_headers(fileName)
-
-    def _write_row(self, outputFile, listOfValues):
-        self._write_delimited_string(outputFile, listOfValues)
-
-    def _write_delimited_string(self, outputFile, listOfValues):
-        try:
-            outputFile.writerow(listOfValues)
-        except AttributeError:
-            outputFile.write(self._delimiter.join(listOfValues) + NEW_LINE)
 
     #-----------------------------------------------------------------------------
     #  Column methods
@@ -288,16 +275,12 @@ class Delimited( MeasureWriter ):
         Align each name-value pair based on existing columns created for outFilename,
         and add any new ones at then end.
         '''
-        rowItems = []
-        for itemName, itemValue in outputItems.items():
-            rowItems.append([itemName, utils.safe_ascii_string(itemValue)])
-
         # Create dict of output values, keyed on the linear position of the
         # item in previous writing of this file (in self._colMeasureTracker)
         # If a column hasn't been encountered add it at the end
         outputColValue = {}
         outputFileCols = self._colMeasureTracker[outFilename]
-        for itemName, itemValue in rowItems:
+        for itemName, itemValue in outputItems.items():
             listPos = None
             try:
                 listPos = outputFileCols[itemName]
@@ -306,7 +289,7 @@ class Delimited( MeasureWriter ):
                 outputFileCols[itemName] = listPos
                 self._colMeasureIsDirty[outFilename] = True
 
-            outputColValue[listPos] = itemValue
+            outputColValue[listPos] = utils.safe_string(itemValue)
 
         # Create return list, padding any col values that don't exist
         outputValues = []
@@ -342,12 +325,13 @@ class Delimited( MeasureWriter ):
         tempPath = os.path.join(self._outDir, tmpFileName )
 
         log.msg(1, "Fixing output headers: {} ==> {}".format(tmpFileName, filename))
-        with open(tempPath, 'w') as tempFile:
+        with open(tempPath, 'w', encoding='utf-8') as tempFile:
             # Write new header line
-            self._write_row(tempFile, self._col_create_names_from_keys(filename))
+            tempFile.write(self._delimiter.join(
+                            self._col_create_names_from_keys(filename)))
             # Move lines from original file to new, skipping header line
             oldPath = os.path.join(self._outDir, filename)
-            with open(oldPath, 'r') as oldFile:
+            with open(oldPath, 'r', encoding='utf-8') as oldFile:
                 _header_line = oldFile.readline()
                 for line in oldFile:
                     tempFile.write(line)
@@ -372,14 +356,14 @@ class Xml( MeasureWriter ):
         # Create the file element
         fileNode = minidom.Element("file")
         for itemName, itemValue in measures.items():
-            fileNode.setAttribute(itemName, utils.safe_ascii_string(itemValue))
+            fileNode.setAttribute(itemName, utils.safe_string(itemValue))
 
         # Create unique analysisResults entries
         itemNum = 1
         for item in analysisResults:
             itemNode = minidom.Element("item" + str(itemNum))
             for itemName, itemValue in item.items():
-                itemNode.setAttribute(itemName, utils.safe_ascii_string(itemValue))
+                itemNode.setAttribute(itemName, utils.safe_string(itemValue))
             itemNum += 1
             fileNode.appendChild(itemNode)
 
@@ -388,7 +372,7 @@ class Xml( MeasureWriter ):
     def _open_file(self, filename):
         MeasureWriter._open_file(self, filename)
         filePath = os.path.join(self._outDir, filename)
-        outFile = open(filePath, 'w')
+        outFile = open(filePath, 'w', encoding='utf-8')
         doc = minidom.Document()
         outFile.write(doc.toprettyxml())
         log.file(2, "Opened XML Output File: {}".format(filePath))

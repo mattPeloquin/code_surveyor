@@ -12,7 +12,9 @@ import logging
 import traceback
 import threading
 import multiprocessing
+
 from . import utils
+from . import job
 
 #-----------------------------------------------------------------
 #  Public Interface
@@ -28,7 +30,7 @@ def code(level, msg): pass
 def notcode(level, msg): pass
 def search(level, msg):  pass
 def temp(level, msg):  pass
-def stack(level = 1): pass
+def stack(level=1): pass
 
 MODE_NBNC = 'nbnc'
 MODE_NOT_CODE = 'not_code'
@@ -42,26 +44,25 @@ MODE_TEMP = 'temp'
 DEFAULT_PRINT_WIDTH = 78
 
 # The main process sets up context that it can pass to children
-def init_context(level, modes=[], printLen=DEFAULT_PRINT_WIDTH, lock=None,
-                    out=None, stack=True):
-    global _level, _modes, _printLen, _writer, _stackOn
+def init_context(level, modes=[], printLen=DEFAULT_PRINT_WIDTH, 
+                    out=None, lock=None):
+    global _level, _modes, _printLen, _writer
     _level = int(level)
     _modes = list(modes)
     _printLen = int(printLen)
     _writer = DebugWriter(lock, out)
-    _stackOn = bool(stack)
     _init()
 
 def get_context():
     if _level > 0:
         return (_level, _modes, _printLen,
-                _stackOn, _writer.out.name, _writer.lock)
+                _writer.out.name, _writer.lock)
     else:
-        return (_level, _modes, None,  None, None, None)
+        return (_level, _modes, None, None, None)
 
 def set_context(context):
-    global _level, _modes, _printLen, _stackOn, _writer
-    (_level, _modes, _printLen, _stackOn, out, lock) = context
+    global _level, _modes, _printLen, _writer
+    (_level, _modes, _printLen, out, lock) = context
     if _level > 0:
         _writer = DebugWriter(lock, out)
         _init()
@@ -87,9 +88,6 @@ _modes = []
 
 # The writer object determines what to write to
 _writer = None
-
-# Support turning stack traceback on and off
-_stackOn = False
 
 # Max str width for debug trace lines
 _printLen = 0
@@ -130,8 +128,8 @@ def _notcode(level, msg):   _debug_log_mode(level, msg, MODE_NOT_CODE)
 def _search(level, msg):    _debug_log_mode(level, msg, MODE_SEARCH)
 def _temp(level, msg):      _debug_log_mode(level, msg, MODE_TEMP)
 
-def _stack(level = 1):
-    if _stackOn and _level >= level:
+def _stack(level=1):
+    if _level >= level:
         _debug_log_raw("\n\nERROR -- Stack Traceback below:\n{}".format(
             traceback.format_exc()))
 
@@ -172,7 +170,7 @@ class DebugWriter( object ):
         try:
             if isinstance(out, basestring):
                 # Open as append since the file can be shared by processes
-                outStream = open(out, 'a')
+                outStream = open(out, 'a', encoding='utf-8')
             elif outStream is None:
                 outStream = sys.stderr
             else:
@@ -189,7 +187,7 @@ class DebugWriter( object ):
             lockAquired = False
             if msg is not None:
                 if not noStrip:
-                    msg = utils.safe_ascii_string(msg)
+                    msg = utils.safe_string(msg)
                     msg = utils.strip_annoying_chars(msg)
 
                 processName = multiprocessing.current_process().name
@@ -205,7 +203,7 @@ class DebugWriter( object ):
                     msg = utils.fit_string(msg, _printLen, " /.../ ")
 
                 if not noLock and self.lock is not None:
-                    lockAquired = self.lock.acquire()
+                    lockAquired = self.lock.acquire( timeout=job.JOB_EXIT_TIMEOUT )
                 
                 self.out.write(msg)
                 self.out.flush()

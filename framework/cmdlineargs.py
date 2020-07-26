@@ -445,7 +445,7 @@ class SurveyorCmdLineArgs( object ):
                 outName = str(self.args.get_next())
                 self.args.move_next()
                 if not outName in ('stderr', 'stdout'):
-                    outStream = open(outName, 'a')
+                    outStream = open(outName, 'a', encoding='utf-8')
             except ValueError:
                 pass
 

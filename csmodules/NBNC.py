@@ -99,6 +99,9 @@ class NBNC( basemodule._BaseModule ):
         'COMMENT_NO_STRIP': (
             '''self._stripLineBeforeComments = False''',
             'Strip blanks and string literals before comment detection'),
+        'CONTINUE_ON_ERROR': (
+            '''self.stopOnError = False''',
+            'Process remaining lines if there is a fatal error on a line'),
         'MAX_LINE_LENGTH': (
             '''self.maxLineLength = int(optValue)''',
             'Cutoff for max chars in a line to process, default is: ' + str(MAX_LINE_LENGTH_DEFAULT)),
@@ -164,8 +167,11 @@ self.reStringLiteral = re.compile(r''' (["](?!["]) .+? ["]) | (['](?![']) .+? ['
         # line breaks here, for use with Python split()
         self.addLineSep = None
 
-        # The maximum characters we'll process in a line
+        # The maximum characters to process in a line
         self.maxLineLength = self.MAX_LINE_LENGTH_DEFAULT
+
+        # Whether to end file processing if exception thrown processing a line
+        self.stopOnError = True
 
         # String literal detector
         # Used to remove string literal from some types of searches
@@ -285,23 +291,25 @@ self.reStringLiteral = re.compile(r''' (["](?!["]) .+? ["]) | (['](?![']) .+? ['
         scanningMultiLine = False
 
         for bufferLine in linesToSurvey:
+            # Handle option of reading out binary files
+            bufferLine = utils.safe_string(bufferLine)
+
             self.counts['RawLines'][self._activeBlock] += 1
             if self._logLevel: log.file(4, "Raw: {}".format(bufferLine))
-
-            # Allow specializations to skip and/or special-case certain lines
-            if self._alternate_line_processing(bufferLine):
-                continue
-
-            # If line seperator, apply it
-            lines = [bufferLine]
-            if self.addLineSep is not None:
-                lines = bufferLine.split(self.addLineSep)
-
-            #
-            # Read through the lines to measure and process them one at a time
-            # This is the main measure loop for csmodules derived from NBNC
-            #
             try:
+                # Allow specializations to skip and/or special-case certain lines
+                if self._alternate_line_processing(bufferLine):
+                    continue
+
+                # If line seperator, apply it
+                lines = [bufferLine]
+                if self.addLineSep is not None:
+                    lines = bufferLine.split(self.addLineSep)
+
+                #
+                # Read through the lines to measure and process them one at a time
+                # This is the main measure loop for csmodules derived from NBNC
+                #
                 for rawLine in lines:
                     self.counts['TotalLines'][self._activeBlock] += 1
 
@@ -334,7 +342,8 @@ self.reStringLiteral = re.compile(r''' (["](?!["]) .+? ["]) | (['](?![']) .+? ['
 
             except Exception as e:
                 log.stack()
-                raise utils.FileMeasureError(
+                if self.stopOnError:
+                    raise utils.FileMeasureError(
                         "Problem processing line: {} with module: {}\n{}".format(
                         str(sum(self.counts['RawLines'])), self.__class__.__name__, str(e)))
 
