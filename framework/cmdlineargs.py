@@ -513,7 +513,7 @@ class SurveyorCmdLineArgs( object ):
 
 class Args( object ):
     '''
-    This subclass encapsulates moving through the arugment list items
+    This subclass encapsulates moving through the argument list items
     All knowledge about argument structure is retained by the user
     '''
     class ArgsFinishedException(Exception):

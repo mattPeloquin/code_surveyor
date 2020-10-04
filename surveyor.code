@@ -26,113 +26,120 @@
 #      Tags can be named whatever you want to group and aggregate measures
 #      The default config below puts language in tag1
 
-# verb  module measures files                           tag1        tag2    tag3 / options/ Comments
+# verb  module measures files                           tag1         tag2  tag3 / options/ Comments
 
-measure  Code   *       NO_EXT;*.sh;*.bat;*.cmd         shell       code    
-measure  Code   *       *.py;*.pyd;*.pyw                python      code    OPT:PYTHON_TRIPLE_COMMENTS
-measure  Code   *       *.c                             c           code    definition
-measure  Code   *       *.h                             c           code    declaration
-measure  Code   *       *.cpp;*.cc;*.cxx                c++         code    definition
-measure  Code   *       *.hpp;*.hxx;*.hh                c++         code    declaration
-measure  Code   *       *.java                          java        code    java
-measure  Code   *       *.cs                            csharp      code    .net
-measure  Code   *       *.go                            go          code
-measure  Code   *       *.js;*.mjs;*.jsx                javascript  code    OPT:ADD_LINE_SEP:; # Split lines
-measure  Code   *       *.ts;*.tsx                      typescript  code    OPT:ADD_LINE_SEP:;
-measure  Code   *       *.sql;*.ddl;*.pls;*.pks;*.pck   sql         code
-measure  Code   *       *.tbl;*.sp;*.proc;*.trg;*.view  sql         code
-measure  Web    *       *.php;*.php?;*.cgi;*.inc        php         code
-measure  Code   *       *.rb;*.rjs;*.rabl;*.erb;*.rake  ruby        code
-measure  Web    *       *.css;*.less;*.scss;*.sass      css         code
-measure  Code   *       *.m;*.mm                        objectivec  code
-measure  Code   *       *.pl;*.pm;*.ps;*.t              perl        code    # Note potential conflict with postscript .ps files
-measure  Code   *       *.swift                         swift       code
-measure  Code   *       *.kt;*.ktm;*.kts                kotlin      code
-measure  Code   *       *.elm                           elm         code
-measure  Code   *       *.rs                            rust        code
-measure  Code   *       *.scala                         scala       code
-measure  Code   *       *.erl                           erlang      code
-measure  Code   *       *.scm                           scheme      code
-measure  Code   *       *.hs                            haskel      code
-measure  Code   *       *.lsp;*.lisp;*.cl;*.el          lisp        code
-measure  Code   *       *.e;*.eiffel                    eiffel      code
-measure  Code   *       *.hx                            haxe        code
-measure  Code   *       *.sol                           solidity    code
-measure  Code   *       *.groovy                        groovy      code
-measure  Code   *       *.coffee                        coffee      code
-measure  Code   *       *.lua                           lua         code
-measure  Code   *       *.f;*.ftn;*.for;*.f90           fortran     code
-measure  Code   *       *.as                            flex        code    # fla files somtimes can be included if mostly text
-measure  Code   *       *.xsl;*.xslt                    xsl         code
-measure  Code   *       *.cls;*.page;*.tab;*.trigger    apex        code    # Force.com Apex and metadata (note conflict with VB6 .cls)
-measure  Code   *       *.workflow;*.object;*.component apex        code    OPT:BLANK_LINE_XML
-measure  Code   *       *.tcl                           tcl         code
-measure  Code   *       *.vbs;*.vba                     vba         code
-measure  Code   *       *.cfc                           coldfusion  code
-measure  Code   *       *.ada;*.ads;*.adb               ada         code
-measure  Code   *       *.cla;*.cln;*.txd;*.txa         clarion     code
-measure  Code   *       *.aj                            aspectjava  code
-measure  Code   *       *.fsx                           fsharp      code    .net
-measure  Code   *       *.d                             d           code
-measure  Code   *       *.r                             math        code
-measure  Code   *       *.awk                           awk         code
-measure  Code   *       *.l;*.lex;*.y;*.yrl;*.g         parsing     code
-measure  Code   *       *.asm;*.s                       asm         code
-measure  Code   *       *.v;*.vh;*.sv;*.vhd             hardware    code
-measure  Code   *       *.vlib;*.vpp                    hardware    code
-measure  Code   *       *.pp                            puppet      code
-measure  Code   *       *.mak;*.*proj                   build       code    # Lots of build file types; tune with file names
-measure  Code   *       *.nsh;*.ism;*.wse;*.rul         install     code
+measure  Code   *       *.sh;*.bat;*.cmd;*.ps1;NO_EXT   shell        code
+measure  Code   *       *.py;*.pyd;*.pyw;*.ipynb        python       code  OPT:PYTHON_TRIPLE_COMMENTS
+measure  Code   *       *.c                             c            code  definition
+measure  Code   *       *.h                             c            code  declaration
+measure  Code   *       *.cpp;*.cc;*.cxx                c++          code  definition
+measure  Code   *       *.hpp;*.hxx;*.hh                c++          code  declaration
+measure  Code   *       *.java                          java         code  java
+measure  Code   *       *.cs                            csharp       code  .net
+measure  Code   *       *.go                            go           code
+measure  Code   *       *.js;*.mjs;*.jsx                javascript   code  OPT:ADD_LINE_SEP:; # Split lines
+measure  Code   *       *.ts;*.tsx                      typescript   code
+measure  Code   *       *.sql;*.ddl;*.tbl;*.tab         sql          code
+measure  Code   *       *.pkg;*.pkb;*.pks;*.pls;*.pck   sql          code
+measure  Code   *       *.sp;*.prc;*.proc;              sql          code
+measure  Code   *       *.trg;*.viw;*.view              sql          code
+measure  Web    *       *.css;*.less;*.scss;*.sass      css          code
+measure  Web    *       *.php;*.php?;*.cgi;*.inc        php          code
+measure  Code   *       *.rb;*.rjs;*.rabl;*.erb;*.rake  ruby         code
+measure  Code   *       *.pl;*.pm;*.ps;*.t              perl         code  # Conflict with postscript .ps files
+measure  Code   *       *.r                             r            code  math
+measure  Code   *       *.wl                            matlab       code  math
+measure  Code   *       *.swift                         swift        code
+measure  Code   *       *.m;*.mm                        objectivec   code
+measure  Code   *       *.kt;*.ktm;*.kts                kotlin       code
+measure  Code   *       *.ex;*.exs                      elxir        code
+measure  Code   *       *.elm                           elm          code
+measure  Code   *       *.groovy                        groovy       code
+measure  Code   *       *.coffee                        coffee       code
+measure  Code   *       *.lua                           lua          code
+measure  Code   *       *.mak;*.*proj                   build        code
+measure  Code   *       *.tf                            terrform     code
+measure  Code   *       *.pp                            puppet       code
+measure  Code   *       *.cljs                          clojurescript code
+measure  Code   *       *.clj                           clojure      code
+measure  Code   *       *.rs                            rust         code
+measure  Code   *       *.scala                         scala        code
+measure  Code   *       *.erl                           erlang       code
+measure  Code   *       *.scm;*.sch;*.ss                scheme       code
+measure  Code   *       *.rkt                           racket       code
+measure  Code   *       *.lsp;*.lisp;*.cl;*.el          lisp         code
+measure  Code   *       *.hs                            haskel       code
+measure  Code   *       *.e;*.eiffel                    eiffel       code
+measure  Code   *       *.hx                            haxe         code
+measure  Code   *       *.fsx                           fsharp       code  .net
+measure  Code   *       *.sol                           solidity     code
+measure  Code   *       *.tcl                           tcl          code
+measure  Code   *       *.asm;*.s                       asm          code
+measure  Code   *       *.f;*.ftn;*.for;*.f90           fortran      code
+measure  Code   *       *.as                            flex         code
+measure  Code   *       *.xsl;*.xslt                    xsl          code
+measure  Code   *       *.aj                            aspectjava   code
+measure  Code   *       *.d                             d            code
+measure  Code   *       *.awk                           awk          code
+measure  Code   *       *.l;*.lex;*.y;*.yrl;*.g         parsing      code
+measure  Code   *       *.cls;*.page;*.tab;*.trigger    apex         code  # Force.com Apex and metadata (note conflict with VB6 .cls)
+measure  Code   *       *.workflow;*.object;*.component apex         code  OPT:BLANK_LINE_XML
+measure  Code   *       *.vbs;*.vba                     vba          code
+measure  Code   *       *.cfc                           coldfusion   code
+measure  Code   *       *.ada;*.ads;*.adb               ada          code
+measure  Code   *       *.rpg                           rpg          code
+measure  Code   *       *.cla;*.cln;*.txd;*.txa         clarion      code
+measure  Code   *       *.v;*.vh;*.sv;*.vhd             hardware     code
+measure  Code   *       *.vlib;*.vpp                    hardware     code
+measure  Code   *       *.nsh;*.ism;*.wse;*.rul         install      code
 
-# Web module separates script tags from markup -- depending on style of code,
+# "measure Web" separates script tags from markup -- depending on code style,
 # you may want to use "measure Code" on these files instead
-measure  Web    *       *.cshtml;*.vbhtml               razor       code    .net
-measure  Web    *       *.jsp;*.tld                     jsp         code    java
-measure  Web    *       *.rhtml                         ruby        code
-measure  Web    *       *.as?x                          aspx        code    .net
-measure  Web    *       *.htm;*.html                    html        code
-measure  Web    *       *.xhtml;*.htc                   html        code
-measure  Web    *       *.xaml                          xaml        code    .net
-measure  Web    *       *.mxml                          flex        code
-measure  Web    *       *.esp;*.esj                     esp         code
-measure  Web    *       *.haml                          haml        code
-measure  Web    *       *.tml                           tapestry    code
-measure  Web    *       *.cfm                           coldfusion  code
-measure  Web    *       *.asp                           asp         code
+measure  Web    *       *.htm;*.html                    html         code
+measure  Web    *       *.jsp;*.tld                     jsp          code  java
+measure  Web    *       *.cshtml;*.vbhtml               razor        code  .net
+measure  Web    *       *.xaml                          xaml         code  .net
+measure  Web    *       *.rhtml                         ruby         code
+measure  Web    *       *.as?x                          aspx         code  .net
+measure  Web    *       *.xhtml;*.htc                   html         code
+measure  Web    *       *.mxml                          flex         code
+measure  Web    *       *.esp;*.esj                     esp          code
+measure  Web    *       *.haml                          haml         code
+measure  Web    *       *.tml                           tapestry     code
+measure  Web    *       *.cfm                           coldfusion   code
+measure  Web    *       *.asp                           asp          code
+
+# Custom Surveyor modules can be built for non-standard comment syntax
+measure  customDelphi *   *.pas                         delphi       code
+measure  customCobol  *   *.cob;*.cbl;*.cobol           cobol        code
+
+# Other file types that can overlap - commented out due to extension conflicts
+# measure  Code   *       *.m                            matlab      code  math  # Conflicts with Obj-C
+# measure  Code   *       *.p;*.i;*.w;*.cls              progress    code
+# measure  customProlog * *.pl                           prolog      code
 
 # Visual Basic requires specific comments and machine code detection
-measure  Code   *       *.vb                            vb.net      code    .net  \
+measure  Code   *       *.vb                            vb.net       code  .net  \
     OPT:COMMENT_LINE:[']+(?![^']+'\s*$)\
     OPT:MACHINE_ADD_DETECT:[re.compile(r'Sub\s+InitializeComponent'),re.compile(r'End\s+Sub')]
-
 # VB6 ".cls" overlaps with Force.com; add it to your custom config file if needed
 #measure  Code   *       *.bas;*.frm;*.ctl;*.mod         vb6         code    \
 #    OPT:COMMENT_LINE:[']+(?![^']+'\s*$)\
 #    OPT:MACHINE_ADD_DETECT:[re.compile(r'^version\s+[1-6]\.0',re.IGNORECASE),re.compile(r'^end',re.IGNORECASE)]
 
-# Custom Surveyor modules can be built for non-standard comment syntax
-measure  customCobol  * *.cob;*.cbl;*.cobol             cobol       code
-measure  customDelphi * *.pas                           delphi      code
-
-# Other file types that can overlap - commented out due to extension conflicts
-# measure  Code   *       *.m                           matlab      code
-# measure  Code   *       *.s                           math        code
-# measure  customProlog * *.pl                          prolog      code
-# measure  Code   *       *.p;*.i;*.w;*.cls             progress    code
-
 # Other resource, content, or data files with code-like structure
 # These files are often NOT human-written, so are tagged as 'other' below
 # If you do have important human-written info in them, modify to tag as 'code'
-measure  NBNC   *       *.xml;*.xsd;*.xss;*.xsc;*.xsx   xml         other    OPT:BLANK_LINE_XML
-measure  NBNC   *       *.yml;*.yaml                    yaml        other
 measure  NBNC   *       *.json                          json        other
+measure  NBNC   *       *.yml;*.yaml                    yaml        other
+measure  NBNC   *       *.xml;*.xsd;*.xss;*.xsc;*.xsx   xml         other    OPT:BLANK_LINE_XML
+measure  NBNC   *       *.ashx;*.asmx;*.resx            resource    other   .net
 measure  NBNC   *       *.proto                         protobuf    other
 measure  NBNC   *       *.po                            perl        other
+measure  NBNC   *       *.dsp;*.sln                     build       other
 measure  NBNC   *       *.properties;*.config;*.policy  config      other
 measure  NBNC   *       *.res;*.str;*.xib               resource    other
-measure  NBNC   *       *.ashx;*.asmx;*.resx            resource    other   .net
 measure  NBNC   *       *.rdl;*.rdlc;*.rpt              report      other
 measure  NBNC   *       *.wsdl;*.idl;*.rpc;*.ridl       interface   other
-measure  NBNC   *       *.dsp;*.sln                     build       other
 measure  NBNC   *       *.bpel                          bpel        other
 measure  customDelphi * *.dfm                           delphi      other

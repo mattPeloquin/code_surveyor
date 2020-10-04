@@ -7,7 +7,7 @@
 #   should be copied into a config file placed in the root of the tree being
 #   measured or searched.
 #
-#   Different sub-branches of the tree can be configured separetly by placing
+#   Different sub-branches of the tree can be configured separately by placing
 #   config files in them with the same name.
 #
 #   This file is also used by surveyor automated tests
@@ -25,11 +25,11 @@
 CONSTANT:_CODE_FILES_: *.cpp;*.java;*.cs;*.js
 
 IGNORE_START
-Anything inbetween IGNORE tags is not processed
+Anything in-between IGNORE tags is not processed
 IGNORE_STOP
 
 #-------------------------------------------------------------------------
-#  General configuraiton options
+#  General configuration options
 
 # Code Measure Options
 measure Code  *  *.py   OPT:METADATA_ALL  OPT:PYTHON
@@ -70,7 +70,7 @@ search_end
 #-------------------------------------------------------------------------
 #  General Search
 #  The Search csmodule does not attempt any code parsing, but can provide
-#  postive-negative searches, and multi-line searches
+#  positive-negative searches, and multi-line searches
 
 CONSTANT:_SEARCH_OUT_: OUT:Searches.csv
 
@@ -146,14 +146,14 @@ routines_end
 
 #-------------------------------------------------------------------------
 #  Including Config Files
-#  Config files can include other config filea, but the semantics can be tricky
+#  Config files can include other config files, but the semantics can be tricky
 #
 #  1) Between config files, each config entry line is matched based on file filter string
 #  2) If the file doing the including defines an exact match of the file filter string
-#     before the include it will NOT be overrideen by the include. This allows redefining
+#     before the include it will NOT be overridden by the include. This allows redefining
 #     only part of a root config file by a child. Note the file filter string must
-#     match exactly, e.g., "*.c;*.h" would only override "*.c;*.h" -- having seperate
-#     entries for "*.c" and "*.h" won't ovverride, and can cause a double count validation
+#     match exactly, e.g., "*.c;*.h" would only override "*.c;*.h" -- having separate
+#     entries for "*.c" and "*.h" won't override, and can cause a double count validation
 #     error
 #
 #  An optional tag value can be used to brand all lines included with a new tag; this allows

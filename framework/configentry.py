@@ -4,14 +4,15 @@
     Encapsulation of config file line
 '''
 
-
 from . import log
+
 
 CONFIG_ITEM_SEPARATOR = ';'
 CONFIG_DELIM_CHAR = ':'
 CONFIG_DELIM_OPTION = 'OPT' + CONFIG_DELIM_CHAR
 CONFIG_DELIM_OUTFILE = 'OUT' + CONFIG_DELIM_CHAR
 CONFIG_TAG_PREFIX = 'tag'
+
 
 #-----------------------------------------------------------------------------
 # Encoding output filenames in measurement tags (used by output writer)

@@ -95,7 +95,7 @@ def _file_match(fileName, fileFilter):
 
         filterMatch = filterRe.match(fileName)
 
-        if log.level() and filterMatch is None:
-            log.file(3, "FilterExtFilter: %s, no match:  %s" % (filterRe.pattern[:10], fileName))
+        if log.level() > 3 and filterMatch is None:
+            log.file(4, "FilterExtFilter: %s, no match:  %s" % (filterRe.pattern[:10], fileName))
 
         return filterMatch is not None

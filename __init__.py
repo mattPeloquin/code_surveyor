@@ -6,7 +6,7 @@
     OO framework to balance several goals:
 
         - easy to use out of the box as a stand-alone application
-        - high configurability through config files and command-line options
+        - flexibility through config files and command-line options
         - measurement customization by anyone comfortable with regex
         - easy extensibility for file processing through csmodules
         - make code internals accessible to non-Python programmers
@@ -20,7 +20,7 @@
       NBNC.py  Core per-line implementation for measuring code files. See
                comment header for a description of NBNC line logic.
 
-      Code.py  Logic for machine-detection, routine-dection, searching,
+      Code.py  Logic for machine-detection, routine-detection, searching,
                more detailed code measurements.
 
     See "csmodules\__init__.py" for a design overview.

@@ -13,6 +13,7 @@ from . import uistrings
 from . import log
 from . import utils
 
+
 # Special identifiers used with the config file
 CONFIG_LINE_CONTINUE = r'\\'
 CONFIG_DELIM_IGNORE_BEGIN = 'IGNORE_START'

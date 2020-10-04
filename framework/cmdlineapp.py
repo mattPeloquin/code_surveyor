@@ -53,7 +53,7 @@ class SurveyorCmdLine( object ):
     '''
 
     # The following lists have dependencies on csmodule defined names, to provide
-    # convienence for display and writing of key output
+    # convenience for display and writing of key output
     ItemColumnOrder = [
             'dir1', 'dir2', 'dir3', 'dir4', 'dir5',
             'fileAbsPath',
