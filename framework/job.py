@@ -11,13 +11,13 @@ import time
 import multiprocessing
 from queue import Empty, Full
 
+from code_surveyor.framework import log  # No relative path to share module globals
 from . import jobworker
 from . import jobout
 from . import folderwalk
 from . import fileext
 from . import configstack
 from . import utils
-from . import log
 
 # Prefixing files/folders to ignore with '.' is almost universal now
 DEFAULT_FOLDERS_TO_SKIP = ['.?*']

@@ -14,10 +14,10 @@ import errno
 from base64 import b64encode
 from xml.dom import minidom
 
+from code_surveyor.framework import log  # No relative path to share module globals
 from . import configentry
 from . import uistrings
 from . import utils
-from . import log
 
 
 def get_writer(typeStr, status_callback, outDir, outputFile, ignoreMetaOutfiles, itemColOrder=[]):
@@ -184,8 +184,8 @@ class Delimited( MeasureWriter ):
 
     def write_items(self, measures, analysisResults):
         '''
-        Write delimited lines based of measures and analysisResults
-        There will be one set of row items in measures, and zero or more sets of
+        Write delimited lines based on measures and analysisResults
+        There is one set of row items in measures, and zero or more sets of
         row items in analysisResults.
         Create at least one row based on measures; if there are analysisResults,
         combine the measures into a row for each analysisResult.
@@ -225,7 +225,7 @@ class Delimited( MeasureWriter ):
     def _open_file(self, fileName):
         MeasureWriter._open_file(self, fileName)
         filePath = os.path.join(self._outDir, fileName)
-        self._rawFiles[fileName] = open(filePath, 'w', encoding='utf-8')
+        self._rawFiles[fileName] = open(filePath, 'w', encoding='utf-8', newline='')
         outWriter = csv.writer( self._rawFiles[fileName], delimiter=self._delimiter, 
                                 quoting=csv.QUOTE_NONNUMERIC)
         log.file(2, "Opened Delimited Output File: {}".format(filePath))
@@ -328,7 +328,7 @@ class Delimited( MeasureWriter ):
         with open(tempPath, 'w', encoding='utf-8') as tempFile:
             # Write new header line
             tempFile.write(self._delimiter.join(
-                            self._col_create_names_from_keys(filename)))
+                            self._col_create_names_from_keys(filename)) + '\n')
             # Move lines from original file to new, skipping header line
             oldPath = os.path.join(self._outDir, filename)
             with open(oldPath, 'r', encoding='utf-8') as oldFile:

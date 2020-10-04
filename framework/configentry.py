@@ -5,7 +5,7 @@
 '''
 
 
-from . import log
+from code_surveyor.framework import log  # No relative path to share module globals
 
 CONFIG_ITEM_SEPARATOR = ';'
 CONFIG_DELIM_CHAR = ':'

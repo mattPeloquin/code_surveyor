@@ -31,8 +31,8 @@
 import re
 import sys
 
-from code_surveyor.framework import utils
 from code_surveyor.framework import log
+from code_surveyor.framework import utils
 from code_surveyor.framework import basemodule
 
 
@@ -374,7 +374,7 @@ self.reStringLiteral = re.compile(r''' (["](?!["]) .+? ["]) | (['](?![']) .+? ['
     def _alternate_line_processing(self, rawLine):
         '''
         This can be overridden to break out of standard NBNC loop for particular lines
-        Our default is to implement skip line checks
+        Default is to implement skip line checks
         '''
         def line_processed():
             self._log_line(rawLine, "-")
@@ -393,10 +393,9 @@ self.reStringLiteral = re.compile(r''' (["](?!["]) .+? ["]) | (['](?![']) .+? ['
     def _detect_block_change(self, line, analysis):
         '''
         Check to see if this line is exiting or entering a new block
-        Blcoks do not nest; once in a block, we'll stay in that block
+        Blcoks do not nest; once in a block, stay in that block
         until a matching exit RE match is found.
-        None is a valid value for the exit RE, so stay in block until
-        the end of file.
+        None is a valid value for the exit RE, so stay in block until EOF.
         If a block change happens, call _block_change_event; the analysis
         argument is to stash any information related to the block change.
         '''

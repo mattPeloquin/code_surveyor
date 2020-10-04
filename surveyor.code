@@ -86,20 +86,24 @@ measure  Code   *       *.v;*.vh;*.sv;*.vhd             hardware    code
 measure  Code   *       *.vlib;*.vpp                    hardware    code
 measure  Code   *       *.nsh;*.ism;*.wse;*.rul         install     code
 
-# Web module separates script tags from markup -- depending on style of code,
+# Web template module separates script from markup -- depending on style of code,
 # you may want to use "measure Code" on these files instead
-measure  Web    *       *.css                           css         code
-measure  Web    *       *.less;*.scss;*.sass;*.styl     css         code
-measure  Web    *       *.cshtml;*.vbhtml               razor       code    .net
-measure  Web    *       *.jsp;*.tld                     jsp         code    java
-measure  Web    *       *.rhtml                         ruby        code
-measure  Web    *       *.as?x                          aspx        code    .net
 measure  Web    *       *.htm;*.html                    html        code
-measure  Web    *       *.xhtml;*.htc                   html        code
+measure  Code   *       *.css                           css         code
+measure  Code   *       *.less;*.scss;*.sass;*.styl     css         code
+measure  Code   *       *.jade                          jade        code
+measure  Code   *       *.haml                          haml        code
+measure  Code   *       *.mustache                      mustache    code
+measure  Web    *       *.vue                           vue         code
+measure  Web    *       *.cshtml;*.vbhtml               razor       code    .net
+measure  Web    *       *.ejs                           ejs         code
+measure  Web    *       *.rhtml                         ruby        code
+measure  Web    *       *.jsp;*.tld                     jsp         code    java
+measure  Web    *       *.as?x                          aspx        code    .net
 measure  Web    *       *.xaml                          xaml        code    .net
-measure  Web    *       *.mxml                          flex        code
 measure  Web    *       *.esp;*.esj                     esp         code
-measure  Web    *       *.haml                          haml        code
+measure  Web    *       *.xhtml;*.htc                   html        code
+measure  Web    *       *.mxml                          flex        code
 measure  Web    *       *.tml                           tapestry    code
 measure  Web    *       *.cfm                           coldfusion  code
 measure  Web    *       *.asp                           asp         code

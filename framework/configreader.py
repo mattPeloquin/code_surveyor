@@ -7,10 +7,10 @@
 import os
 import re
 
+from code_surveyor.framework import log  # No relative path to share module globals
 from . import configentry
 from . import fileext
 from . import uistrings
-from . import log
 from . import utils
 
 # Special identifiers used with the config file

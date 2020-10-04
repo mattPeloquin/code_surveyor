@@ -28,7 +28,7 @@ import os
 import filecmp
 import difflib
 
-from . import log
+from code_surveyor.framework import log  # No relative path to share module globals
 from . import utils
 from . import uistrings
 from .fileopen import open_file_for_survey

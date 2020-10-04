@@ -3,9 +3,9 @@
     Ecapsulates Management of Surveyor measurement modules
 '''
 
+from code_surveyor.framework import log  # No relative path to share module globals
 from . import uistrings
 from . import utils
-from . import log
 
 
 class CodeSurveyorModules( object ):
@@ -14,7 +14,7 @@ class CodeSurveyorModules( object ):
     Note the "csmodules" are actually instances of the class inside each python
     module. The modules are loaded lazily and the classes are cached.
     Since csmodule classes may have different initialization states set by
-    options, we include the option strings as part of the cache name.
+    options, include the option strings as part of the cache name.
     '''
     PACKAGE_PREFIX = 'csmodules.'
     RequiredMethods = [ 'open_file', 'process_file',

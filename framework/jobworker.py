@@ -25,10 +25,11 @@ from multiprocessing import Process
 from errno import EACCES
 from queue import Empty, Full
 
+from code_surveyor.framework import log  # No relative path to share module globals
 from . import fileext
 from . import uistrings
-from . import log
 from . import utils
+
 
 WORKER_PROC_BASENAME = "Job"
 INPUT_EMPTY_WAIT = 0.1

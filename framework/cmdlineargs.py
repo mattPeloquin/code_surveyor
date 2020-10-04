@@ -13,9 +13,9 @@
 import os
 import sys
 
+from code_surveyor.framework import log  # No relative path to share module globals
 from . import surveyor_dir
 from . import utils
-from . import log
 from .uistrings import *
 
 

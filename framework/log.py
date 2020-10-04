@@ -48,6 +48,7 @@ def init_context(level, modes=[], printLen=DEFAULT_PRINT_WIDTH,
                     out=None, lock=None):
     global _level, _modes, _printLen, _writer
     _level = int(level)
+    print( _level )
     _modes = list(modes)
     _printLen = int(printLen)
     _writer = DebugWriter(lock, out)
@@ -72,9 +73,12 @@ def set_context(context):
             multiprocessing.util.log_to_stderr(logging.DEBUG)
 
 # Accessors
-def level():    return _level
-def modes():    return _modes
-def out():      return None if _writer is None else _writer.out
+def level():
+    return _level
+def modes():    
+    return _modes
+def out():      
+    return None if _writer is None else _writer.out
 
 
 #-----------------------------------------------------------------

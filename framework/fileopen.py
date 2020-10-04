@@ -11,10 +11,8 @@
 '''
 
 import os
-from codecs import ( BOM_UTF8, BOM_UTF16, BOM_UTF32, 
-        BOM_UTF16_BE, BOM_UTF16_LE, BOM_UTF32_BE, BOM_UTF32_LE )
 
-from . import log
+from code_surveyor.framework import log  # No relative path to share module globals
 from . import utils
 from . import filetype
 
@@ -24,18 +22,8 @@ FILE_START_UTF8_CHECK = 2 ** 18
 # How much of file to read to support checks of content
 FILE_START_CHECK = 256
 
+# Use buffering to manage ingestion of large files
 FILE_BUFFERING = 2 ** 24
-
-# Registered file type encodings detected with start of file bytes
-BOMS = (
-    (BOM_UTF8, "utf_8"),
-    (BOM_UTF32, "utf_32"),
-    (BOM_UTF32_BE, "utf_32_be"),
-    (BOM_UTF32_LE, "utf_32_le"),
-    (BOM_UTF16, "utf_16"),
-    (BOM_UTF16_BE, "utf_16_be"),
-    (BOM_UTF16_LE, "utf_16_le"),
-    )
 
 # Magic numbers and phrases
 NonCodeFileStart = (
@@ -84,33 +72,21 @@ def _open_file(filePath, forceAll):
     # Use buffering to reduce the cost of open on larger files
     fileObj = open(filePath, 'r', buffering=FILE_BUFFERING, encoding='utf_8')
 
-    # OPTION - read the file as binary and let the modules 
-    # do the decoding
-    #return open(filePath, 'rb', buffering=FILE_BUFFERING)
-
     # Grab the first bytes of the file
     start = None
     try:
-
-        start = _get_file_start(fileObj, FILE_START_UTF8_CHECK)
-
-    except UnicodeDecodeError as e:
-        fileObj.close()
         try:
-            # Try lookup of known BOMs
-            # Otherwise open with safe 1-byte ascii decoding 
-            fileBinary = open(filePath, 'rb', buffering=FILE_START_CHECK)
-            startBytes = _get_file_start(fileBinary, FILE_START_CHECK)
-            encoding = _check_start_phrases(startBytes, BOMS) or 'latin_1'
-            log.file(1, "UTF-8 error, trying {}: {}".format(encoding, filePath))
-            fileObj = open(filePath, 'r', buffering=FILE_BUFFERING, 
-                            encoding=encoding)
-            start = _get_file_start(fileObj, FILE_START_CHECK)
-        except Exception as e2:
-            log.msg(1, "Cannot open and read file: {}".format(filePath))
+            start = _get_file_start(fileObj, FILE_START_UTF8_CHECK)
+
+        except UnicodeDecodeError as e:
             fileObj.close()
-        finally:
-            fileBinary.close()
+            log.file(1, "UTF-8 error, using binary: {}".format(filePath))
+            fileObj = open(filePath, 'rb', buffering=FILE_BUFFERING)
+            start = _get_file_start(fileObj, FILE_START_CHECK)
+
+    except Exception as e2:
+        log.msg(1, "Cannot open and read {}: {}".format(filePath, e2))
+        fileObj.close()
  
     # Do tests that look at start of the file
     if start:
@@ -126,6 +102,8 @@ def _open_file(filePath, forceAll):
             fileObj.close()
             fileObj = None
     else:
+        if fileObj:
+            fileObj.close()
         fileObj = None
 
     return fileObj
