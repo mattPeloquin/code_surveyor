@@ -20,7 +20,9 @@
 import os
 import re
 import fnmatch
-from . import log
+
+from code_surveyor.framework import log  # No relative path to share module globals
+
 
 # Special tokens we allow in filter patterns
 BLANK_FILE_EXT = 'NO_EXT'

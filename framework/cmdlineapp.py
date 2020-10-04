@@ -13,6 +13,7 @@ import traceback
 import multiprocessing
 from numbers import Number
 
+from code_surveyor.framework import log  # No relative path to share module globals
 from . import surveyor_dir
 from . import init_surveyor_dir
 from . import runtime_dir
@@ -24,7 +25,6 @@ from . import basemodule
 from . import configstack
 from . import cmdlineargs
 from . import utils
-from . import log
 from .uistrings import *
 
 # Debugging support
@@ -175,7 +175,8 @@ class SurveyorCmdLine( object ):
                 self._finalException = e
             finally:
                 # Handle report of errors and exceptions 
-                self._errorList += [ str(e) for e in self._job.exceptions ]
+                if self._job:
+                    self._errorList += [ str(e) for e in self._job.exceptions ]
                 success = not self._errorList
                 self._display_summary()
                 self._cleanup()
@@ -584,7 +585,7 @@ class SurveyorCmdLine( object ):
         callbacks. And we may need to share output with debug stream.
         '''
         try:
-            self._outLock.acquire()
+            self._outLock.acquire( timeout=job.JOB_EXIT_TIMEOUT )
             self._write_message(message, forceClear)
             self._out.flush()
         finally:

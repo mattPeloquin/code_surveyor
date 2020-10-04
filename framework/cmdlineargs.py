@@ -13,9 +13,9 @@
 import os
 import sys
 
+from code_surveyor.framework import log  # No relative path to share module globals
 from . import surveyor_dir
 from . import utils
-from . import log
 from .uistrings import *
 
 
@@ -445,7 +445,7 @@ class SurveyorCmdLineArgs( object ):
                 outName = str(self.args.get_next())
                 self.args.move_next()
                 if not outName in ('stderr', 'stdout'):
-                    outStream = open(outName, 'a')
+                    outStream = open(outName, 'a', encoding='utf-8')
             except ValueError:
                 pass
 

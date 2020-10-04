@@ -28,7 +28,7 @@ import os
 import filecmp
 import difflib
 
-from . import log
+from code_surveyor.framework import log  # No relative path to share module globals
 from . import utils
 from . import uistrings
 from .fileopen import open_file_for_survey
@@ -205,8 +205,8 @@ class _BaseModule( object ):
     def open_file(self, filePath, deltaPath, existingFileHandle=None):
         '''
         Create and return a file handle, if one matches the given criteria
-        Note that fileHandle may actually just be an iterable list
-        If none is returned, only file metadata will be considered
+        Note that fileHandle may actually just be an iterable list.
+        If none is returned, only file metadata will be considered.
         '''
         if self._metaDataOnly:
             return None
@@ -220,8 +220,7 @@ class _BaseModule( object ):
 
 
     def process_file(self, filePath, fileLines,
-                        configEntry,
-                        numSameFiles,
+                        configEntry, numSameFiles,
                         file_measured_callback):
         '''
         Inherited modules use the default implementation of process_file

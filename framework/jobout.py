@@ -8,11 +8,13 @@ import _thread
 import threading
 from queue import Empty, Full
 
+from code_surveyor.framework import log  # No relative path to share module globals
 from . import utils
-from . import log
+
 
 OUTPUT_EMPTY_WAIT = 0.02
 CONTROL_QUEUE_TIMEOUT = 0.1
+
 
 class OutThread( threading.Thread ):
     '''
@@ -53,9 +55,9 @@ class OutThread( threading.Thread ):
             log.cc(1, "Ctrl-c occurred in OUTPUT THREAD")
             _thread.interrupt_main()
         except Exception as e:
-            log.msg(1, "EXCEPTION occurred processing output queue")
+            log.msg(1, "EXCEPTION processing output queue: " + str(e))
+            log.stack()
             self._controlQueue.put_nowait(('JOB', 'EXCEPTION', e))
-            log.stack(2)
         finally:
             log.cc(1, "TERMINATING")
 

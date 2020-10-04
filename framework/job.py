@@ -11,13 +11,13 @@ import time
 import multiprocessing
 from queue import Empty, Full
 
+from code_surveyor.framework import log  # No relative path to share module globals
 from . import jobworker
 from . import jobout
 from . import folderwalk
 from . import fileext
 from . import configstack
 from . import utils
-from . import log
 
 # Prefixing files/folders to ignore with '.' is almost universal now
 DEFAULT_FOLDERS_TO_SKIP = ['.?*']
@@ -31,7 +31,7 @@ DEFAULT_NUM_WORKERS = max(1, multiprocessing.cpu_count()-1)
 MAIN_PROCESSING_SLEEP = 0.2
 WORKER_EXIT_TIMEOUT = 0.4
 WORKER_EXIT_TRIES = 8
-JOBOUT_EXIT_TIMEOUT = 1
+JOB_EXIT_TIMEOUT = 1.0
 TASK_FULL_TIMEOUT = 0.4
 
 # Max number of files and size in bytes that will be sent to a worker
@@ -176,7 +176,7 @@ class Job( object ):
         log.cc(1, "Workers finished, waiting for output to finish...")
         self._send_output_command('WORK_DONE')
         while self._check_command() or self._outThread.is_alive():
-            self._outThread.join(JOBOUT_EXIT_TIMEOUT)
+            self._outThread.join(JOB_EXIT_TIMEOUT)
             self._status_callback()
             self._continueProcessing = not bool(self._controlQueue.empty())
 
@@ -193,7 +193,7 @@ class Job( object ):
                         worker.name, worker.is_alive()))
                 self._check_command()
                 tries += 1
-        self._outThread.join(JOBOUT_EXIT_TIMEOUT)
+        self._outThread.join(JOB_EXIT_TIMEOUT)
         self._close_queues()
         log.cc(1, "TERMINATING")
 

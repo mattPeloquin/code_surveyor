@@ -110,7 +110,7 @@ class Search( _searchMixin, basemodule._BaseModule ):
                     # May search binaries, so take some steps to clean up exported string
                     cleanSearchLine = line.strip()
                     cleanSearchLine = cleanSearchLine[:self.MAX_STR_LEN]
-                    cleanSearchLine = utils.safe_ascii_string(cleanSearchLine)
+                    cleanSearchLine = utils.safe_string(cleanSearchLine)
                     cleanSearchLine = utils.strip_annoying_chars(cleanSearchLine)
 
                     # Export the findings

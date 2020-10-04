@@ -7,10 +7,10 @@
 import os
 import fnmatch
 
+from code_surveyor.framework import log  # No relative path to share module globals
 from . import configstack
 from . import fileext
 from . import utils
-from . import log
 
 class FolderWalker( object ):
     '''

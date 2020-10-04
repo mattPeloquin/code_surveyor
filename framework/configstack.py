@@ -6,13 +6,13 @@
 
 import os
 
+from code_surveyor.framework import log  # No relative path to share module globals
 from . import surveyor_dir
 from . import runtime_dir
 from . import configentry
 from . import configreader
 from . import fileext
 from . import uistrings
-from . import log
 from . import utils
 from .modules import CodeSurveyorModules
 
@@ -88,7 +88,7 @@ class ConfigStack( object ):
     def load_csmodule(self, configEntry):
         '''
         Callback for ConfigReader to load modules
-        Module loading is delegated to our set of cached modules
+        Module loading is delegated to set of cached modules
         Concatonate and default config options from the application with
         any options defined in the conifig file.
         '''

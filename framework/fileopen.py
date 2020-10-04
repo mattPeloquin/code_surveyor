@@ -1,25 +1,29 @@
 #---- Code Surveyor, Copyright 2019 Matt Peloquin, MIT License
 '''
-    Support for modules opening files to measure
+    Support for modules opening files to measure.
+
+    Based on testing, for performance surveyor tries to open files as 
+    decoded text vs. doing a binary read and decoding each line. 
+    To do this each file is pre-read into a buffer as UTF8, and 
+    if problems are encountered, other decoding is applied. 
+    This can fail if the file has decoding issues past the 
+    FILE_START_UTF8_CHECK size.
 '''
 
 import os
-from codecs import BOM_UTF8, BOM_UTF16_BE, BOM_UTF16_LE, BOM_UTF32_BE, BOM_UTF32_LE
 
-from . import log
+from code_surveyor.framework import log  # No relative path to share module globals
 from . import utils
 from . import filetype
 
+# How much of the file to read to test UTF8 decoding
+FILE_START_UTF8_CHECK = 2 ** 18
 
-FILE_START_SIZE = 256
+# How much of file to read to support checks of content
+FILE_START_CHECK = 256
 
-BOMS = (
-    (BOM_UTF8, "UTF-8"),
-    (BOM_UTF32_BE, "UTF-32-BE"),
-    (BOM_UTF32_LE, "UTF-32-LE"),
-    (BOM_UTF16_BE, "UTF-16-BE"),
-    (BOM_UTF16_LE, "UTF-16-LE"),
-    )
+# Use buffering to manage ingestion of large files
+FILE_BUFFERING = 2 ** 24
 
 # Magic numbers and phrases
 NonCodeFileStart = (
@@ -42,7 +46,7 @@ def open_file_for_survey(filePath, existingFile, forceAll, sizeThreshold):
         log.file(1, "Skipping, non-code ext: {}".format(filePath))
         return 
         
-    # Then check for size threshold, faster than opening file
+    # Then check for size threshold; faster than opening file
     if sizeThreshold > 0:
         fileSize = utils.get_file_size(filePath)
         if sizeThreshold < fileSize:
@@ -59,34 +63,31 @@ def open_file_for_survey(filePath, existingFile, forceAll, sizeThreshold):
 
 def _open_file(filePath, forceAll):
     """
-    Manage the opening of the file with correct encoding based on any 
-    errors in decoding utf-8 default and through inspection of file start.
+    Manage the file opening with correct encoding based on any errors in 
+    decoding utf-8 default and through inspection of file start.
     This isn't foolproof - files that use different encodings farther 
     in may blow up later if decoded, but that is rare.
     """
-    fileObj = None
+
+    # Use buffering to reduce the cost of open on larger files
+    fileObj = open(filePath, 'r', buffering=FILE_BUFFERING, encoding='utf_8')
+
+    # Grab the first bytes of the file
     start = None
     try:
-        # Use buffering to reduce the cost of open on larger files
-        fileObj = open(filePath, 'r', buffering=2^24, encoding='utf-8')
-        start = _get_file_start(fileObj)
-    except UnicodeDecodeError as e:
-        if fileObj:
-            fileObj.close()
-        # Try to lookup Unicode BOM
         try:
-            fileBinary = open(filePath, 'rb', buffering=2^8)
-            startBytes = _get_file_start(fileBinary)
-            bom = _check_start_phrases(startBytes, BOMS) 
-            if bom:
-                fileObj = open(filePath, 'r', buffering=2^24, encoding=bom)
-                start = _get_file_start(fileObj)
-        except Exception as e2:
-            log.file(1, "Cannot open and read file: {}".format(filePath))
-            fileObj.close()
-        finally:
-            fileBinary.close()
+            start = _get_file_start(fileObj, FILE_START_UTF8_CHECK)
 
+        except UnicodeDecodeError as e:
+            fileObj.close()
+            log.file(1, "UTF-8 error, using binary: {}".format(filePath))
+            fileObj = open(filePath, 'rb', buffering=FILE_BUFFERING)
+            start = _get_file_start(fileObj, FILE_START_CHECK)
+
+    except Exception as e2:
+        log.msg(1, "Cannot open and read {}: {}".format(filePath, e2))
+        fileObj.close()
+ 
     # Do tests that look at start of the file
     if start:
         keepFileOpen = forceAll
@@ -101,14 +102,15 @@ def _open_file(filePath, forceAll):
             fileObj.close()
             fileObj = None
     else:
+        if fileObj:
+            fileObj.close()
         fileObj = None
 
     return fileObj
 
-
-def _get_file_start(fileObj, maxWin=FILE_START_SIZE):
+def _get_file_start(fileObj, maxWin):
     fileObj.seek(0)
-    fileStart = fileObj.read(maxWin)
+    fileStart = utils.safe_string(fileObj.read(maxWin))
     fileObj.seek(0)
     return fileStart
 
