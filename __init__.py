@@ -11,9 +11,11 @@
         - easy extensibility for file processing through csmodules
         - make code internals accessible to non-Python programmers
 
-    Surveyor roughly follows Python programming idioms while striving to be 
-    self-evident to programmers who do not have a Python background.
-
+    Surveyor has been around for a LONG time. The goal was to roughly
+    follow Python idioms while striving to be generally accessible 
+    (before Python became so popular). It has been solid and not needed 
+    a full reworking, so is not a shining example of modern Python style.
+    
     csmodules
     Holds Surveyor measurement modules. The two most important of these are:
 

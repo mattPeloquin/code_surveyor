@@ -29,6 +29,7 @@
 # verb  module measures  file types                     tag1         tag2   tag3 / options/ Comments
 
 measure  Code   *       *.py;*.pyd;*.pyw;*.ipynb        python       code   OPT:PYTHON_TRIPLE_COMMENTS
+measure  Code   *       *.sh;*.bat;*.cmd;*.ps1;NO_EXT   shell        code
 measure  Code   *       *.c                             c            code   definition
 measure  Code   *       *.h                             c            code   declaration
 measure  Code   *       *.cpp;*.cc;*.cxx                c++          code   definition
@@ -36,51 +37,67 @@ measure  Code   *       *.hpp;*.hxx;*.hh                c++          code   decl
 measure  Code   *       *.java                          java         code   java
 measure  Code   *       *.cs                            csharp       code   .net
 measure  Code   *       *.go                            go           code
-measure  Code   *       *.js;*.mjs                      javascript   code   OPT:ADD_LINE_SEP:; # Split lines
+measure  Code   *       *.rs                            rust         code
+measure  Code   *       *.js;*.mjs                      javascript   code
 measure  Code   *       *.ts                            typescript   code
-measure  Code   *       *.sh;*.bat;*.cmd;*.ps1;NO_EXT   shell        code
+measure  Web    *       *.htm;*.html                    html         code
+measure  Web    *       *.vue                           vue          code
+measure  Code   *       *.jsx;*.tsx                     react        code   
+measure  Code   *       *.dart                          dart         code
+measure  Code   *       *.swift                         swift        code
+measure  Code   *       *.kt;*.ktm;*.kts                kotlin       code
+measure  Code   *       *.tf                            terrform     code
+measure  NBNC   *       *.yml;*.yaml                    yaml         other
+measure  Code   *       *.m;*.mm                        objectivec   code
+measure  Code   *       *.scala                         scala        code
+measure  Code   *       *.clj;*.cljs                    clojure      code
 measure  Code   *       *.sql;*.ddl;*.tbl;*.tab         sql          code
 measure  Code   *       *.pkg;*.pkb;*.pks;*.pls;*.pck   sql          code
 measure  Code   *       *.sp;*.prc;*.proc;              sql          code
 measure  Code   *       *.trg;*.viw;*.view              sql          code
-measure  Web    *       *.css;*.less;*.scss;*.sass      css          code
 measure  Web    *       *.php;*.php?;*.cgi;*.inc        php          code
 measure  Code   *       *.rb;*.rjs;*.rabl;*.erb;*.rake  ruby         code
 measure  Code   *       *.pl;*.pm;*.ps;*.t              perl         code   # Conflict with postscript .ps files
+measure  Code   *       *.css                           css          code
+measure  Code   *       *.less;*.scss;*.sass;*.styl     css          code
+measure  Web    *       *.cshtml;*.vbhtml               razor        code   .net
+measure  Code   *       *.mustache                      mustache     code
+measure  Web    *       *.rhtml                         ruby         code
+measure  Web    *       *.jsp;*.tld                     jsp          code   java
+measure  Code   *       *.js2                           jinja2       code   ansible
+measure  Web    *       *.as?x                          aspx         code   .net
+measure  Web    *       *.xaml                          xaml         other  .net
+measure  Code   *       *.jade                          jade         code
+measure  Code   *       *.haml                          haml         code
+measure  Web    *       *.ejs                           ejs          code
+measure  Code   *       *.pp                            puppet       code
+measure  Web    *       *.esp;*.esj                     esp          code
+measure  Web    *       *.xhtml;*.htc                   html         code
+measure  Code   *       *.f;*.ftn;*.for;*.f77;*.f90     fortran      code
 measure  Code   *       *.r                             r            code   math
 measure  Code   *       *.wl;*.nb                       matlab       code   math
-measure  Code   *       *.swift                         swift        code
-measure  Code   *       *.m;*.mm                        objectivec   code
-measure  Code   *       *.kt;*.ktm;*.kts                kotlin       code
-measure  Code   *       *.ex;*.exs                      elxir        code
-measure  Code   *       *.elm                           elm          code
+measure  Code   *       *.d                             d            code
+measure  Code   *       *.lua                           lua          code
 measure  Code   *       *.groovy                        groovy       code
 measure  Code   *       *.coffee                        coffee       code
-measure  Code   *       *.lua                           lua          code
-measure  Code   *       *.mak;*.*proj                   build        code
-measure  Code   *       *.tf                            terrform     code
-measure  Code   *       *.js2                           jinja2       code   ansible 
-measure  Code   *       *.pp                            puppet       code
-measure  Code   *       *.tcl                           tcl          code
-measure  Code   *       *.asm;*.s                       asm          code
-measure  Code   *       *.f;*.ftn;*.for;*.f77;*.f90     fortran      code
-measure  Code   *       *.rs                            rust         code
-measure  Code   *       *.scala                         scala        code
 measure  Code   *       *.erl                           erlang       code
 measure  Code   *       *.scm;*.sch;*.ss                scheme       code
 measure  Code   *       *.rkt                           racket       code
 measure  Code   *       *.lsp;*.lisp;*.cl;*.el          lisp         code
 measure  Code   *       *.hs                            haskel       code
 measure  Code   *       *.e;*.eiffel                    eiffel       code
-measure  Code   *       *.clj                           clojure      code
-measure  Code   *       *.cljs                          clojurescript code
 measure  Code   *       *.hx                            haxe         code
+measure  Code   *       *.ex;*.exs                      elxir        code
+measure  Code   *       *.elm                           elm          code
+measure  Code   *       *.mak;*.*proj                   build        code
+measure  Code   *       *.tcl                           tcl          code
+measure  Code   *       *.asm;*.s                       asm          code
 measure  Code   *       *.fsx                           fsharp       code   .net
 measure  Code   *       *.sol                           solidity     code
-measure  Code   *       *.as                            flex         code
+measure  Code   *       *.as;*.mxml                     flex         code
+measure  Web    *       *.tml                           tapestry     code
 measure  Code   *       *.xsl;*.xslt                    xsl          code
 measure  Code   *       *.aj                            aspectjava   code
-measure  Code   *       *.d                             d            code
 measure  Code   *       *.awk                           awk          code
 measure  Code   *       *.l;*.lex;*.y;*.yrl;*.g         parsing      code
 measure  Code   *       *.cls;*.page;*.tab;*.trigger    apex         code   # Force.com Apex and metadata (note conflict with VB6 .cls)
@@ -89,40 +106,18 @@ measure  Code   *       *.vbs;*.vba                     vba          code
 measure  Code   *       *.cfc                           coldfusion   code
 measure  Code   *       *.ada;*.ads;*.adb               ada          code
 measure  Code   *       *.cla;*.cln;*.txd;*.txa         clarion      code
+measure  Web    *       *.cfm                           coldfusion   code
+measure  Web    *       *.asp                           asp          code
 measure  Code   *       *.v;*.vh;*.sv;*.vhd             hardware     code
 measure  Code   *       *.vlib;*.vpp                    hardware     code
 measure  Code   *       *.nsh;*.ism;*.wse;*.rul         install      code
-
-# Web template module separates script from markup -- depending on style of code,
-# you may want to use "measure Code" on these files instead
-measure  Web    *       *.htm;*.html                    html        code
-measure  Web    *       *.vue                           vue         code
-measure  Code   *       *.jsx                           jsx         code   react
-measure  Code   *       *.tsx                           tsx         code   react
-measure  Code   *       *.css                           css         code
-measure  Code   *       *.less;*.scss;*.sass;*.styl     css         code
-measure  Web    *       *.cshtml;*.vbhtml               razor       code   .net
-measure  Code   *       *.jade                          jade        code
-measure  Code   *       *.haml                          haml        code
-measure  Code   *       *.mustache                      mustache    code
-measure  Web    *       *.ejs                           ejs         code
-measure  Web    *       *.rhtml                         ruby        code
-measure  Web    *       *.jsp;*.tld                     jsp         code   java
-measure  Web    *       *.as?x                          aspx        code   .net
-measure  Web    *       *.xaml                          xaml        code   .net
-measure  Web    *       *.esp;*.esj                     esp         code
-measure  Web    *       *.xhtml;*.htc                   html        code
-measure  Web    *       *.mxml                          flex        code
-measure  Web    *       *.tml                           tapestry    code
-measure  Web    *       *.cfm                           coldfusion  code
-measure  Web    *       *.asp                           asp         code
 
 # Languages with unique comments can be added
 measure  Code   *       *.rpg                           rpg          code   \
     OPT:COMMENT_LINE:(......[\*])
 
 # File types that overlap - commented out due to extension conflicts
-# measure  Code   *       *.m                           matlab      code   math   
+# measure  Code   *       *.m                           matlab      code   math
 # measure  Code   *       *.m                           wolfram     code   math
 # measure  customProlog * *.pl                          prolog      code
 # measure  Code   *       *.p;*.i;*.w;*.cls             progress    code
@@ -144,7 +139,6 @@ measure  customCobol  *   *.cob;*.cbl;*.cobol           cobol        code
 # These files are often NOT human-written, so are tagged as 'other' below
 # If you do have important human-written info in them, modify to tag as 'code'
 measure  NBNC   *       *.json                          json        other
-measure  NBNC   *       *.yml;*.yaml                    yaml        other
 measure  NBNC   *       *.xml;*.xsd;*.xss;*.xsc;*.xsx   xml         other  OPT:BLANK_LINE_XML
 measure  NBNC   *       *.ashx;*.asmx;*.resx            resource    other  .net
 measure  NBNC   *       *.proto                         protobuf    other

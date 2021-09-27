@@ -15,8 +15,6 @@ from code_surveyor.framework import log  # No relative path to share module glob
 from . import jobworker
 from . import jobout
 from . import folderwalk
-from . import fileext
-from . import configstack
 from . import utils
 
 # Prefixing files/folders to ignore with '.' is almost universal now

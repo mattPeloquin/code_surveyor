@@ -4,7 +4,6 @@
 '''
 
 import re
-import sys
 import zlib
 
 from code_surveyor.framework import utils

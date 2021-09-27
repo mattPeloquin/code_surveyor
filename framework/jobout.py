@@ -6,7 +6,7 @@
 import time
 import _thread
 import threading
-from queue import Empty, Full
+from queue import Empty
 
 from code_surveyor.framework import log  # No relative path to share module globals
 from . import utils

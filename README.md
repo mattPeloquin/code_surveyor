@@ -4,16 +4,17 @@ A customizable framework for measuring and searching code files.
 Provides metrics and scanning output for easy spreadsheet and pivot table analysis.
 
 ## Using Surveyor
-Use Surveyor as an executeable or Python 3 script. 
-Either download the appropriate version from the "dist" folder or clone this repository.
-Below are some examples for running in different environments: 
+Surveyor is a Python 3 application that only uses standard libraries (so no extra install or virtual environment is needed). Below are some examples for running: 
 
-    surveyor               (Surveyor executable folder in path)
-    python surveyor.py     (Python in path, no .py association)
-    surveyor.py            (Python and surveyor in path, .py runs)
+    *Python in path, current folder is code_surveyor*
+
+        > python surveyor.py - /folder/to/measure
+    
+    *Python and surveyor in path, .py run association, measure current folder*
+
+        > surveyor.py
 
 Surveyor measures most code out of the box, but works best with custom configuration (see Config Files below).
-All cores are used; use the "-w" option to modify. 
 
 Summary metrics are displayed on the console and detailed per-file metrics are in:
 
@@ -28,15 +29,14 @@ Surveyor measurement is driven by config files that define:
 
 The default "surveyor.code" config file should be located with Surveyor; see this and "surveyor.examples" for documentation and eamples on how to configure Surveyor.
 
-Each run walks the target folder tree searching for config
-file(s). If no "surveyor.code" files are found the default config file is used.
-Customize folder tree measurement by placing "surveyor.code" files in folders with only the measures you care about for that folder and its children. 
+Each run walks the target folder tree searching for config file(s). If no "surveyor.code" files are found the default config file is used. Customize folder tree measurement by placing "surveyor.code" files in folders with only the measures you care about for that folder and its children. 
 
 To exclude a folder branch, place an empty config at the top.
 
 # NBNC Lines of Code
 Surveyor's main code size metric is Non-Blank, Non-Comment (NBNC) lines. Blank lines include whitespace AND lines that have only punctuation. 
-Surveyor tries to seperate machine-generated lines (see below).
+
+Surveyor tries to separate machine-generated lines (see below).
 
 The NBNC size approximation works well across languages and can be applied to other text-file human work product (like config files).
 
@@ -63,8 +63,7 @@ config file option or "-an" command line option.
 Tune regex for machine code with OPT:MACHINE_DETECTORS (see surveyor.examples).
 
 ## Performance
-Performance varies depending on the size and nature of the files being measured, what measures are run, and hardware performance.
-Jobs with extensive regular expression processing are likely to be CPU bound.
+Performance varies depending on the size and nature of the files being measured, what measures are run, and hardware performance. Jobs with extensive regular expression processing are likely to be CPU bound.
 OS file caching will improve performance if multiple Surveyor jobs are run back-to-back. 
 
 Surveyor optimizations include:
@@ -82,4 +81,4 @@ For a quick scan of all files use the "-am" option, which only looks at metadata
 # System Overview
 Most design information is documented in the code itself; see specific files for descriptions of modules and classes.
 
-Copyright (c) 2004-2019 Matt Peloquin and Construx Software
+Copyright (c) 2004-2020 Matt Peloquin
