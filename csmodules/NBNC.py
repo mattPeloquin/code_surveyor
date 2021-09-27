@@ -185,7 +185,7 @@ self.reStringLiteral = re.compile(r''' (["](?!["]) .+? ["]) | (['](?![']) .+? ['
                 ''', self._reFlags)
         self.reBlankLineAdd = None
         self.blankXmlLines = False
-        self.reBlankXmlLine = re.compile(r'''^ \s* <[\w/\\]*?> \s* $''', self._reFlags)
+        self.reBlankXmlLine = re.compile(r'''^ \s* (<[\w/\\]*>)+ \s* $''', self._reFlags)
 
         # Skip lines; don't consider it in processing
         self.reSkipLine = None

@@ -769,11 +769,13 @@ class Code( _searchMixin, NBNC ):
             'MaxIndent': 0,
             }
 
-    def _detect_routine_start(self, line):
+    def _detect_routine_start(self, line, indentDepth):
         '''
         Detect the start of a routine in a line using either list from config
         file with positive and negative searches, or default regex.
         '''
+        if indentDepth > self.routineIgnoreCol:
+            return
         if self._positiveSearches:
             # Do the negative searches first, since for many scenarios it will be faster
             return self._first_match(line, self._positiveSearches, self._negativeSearches, negativeFirst=True)
@@ -822,7 +824,7 @@ class Code( _searchMixin, NBNC ):
         strippedLine = self._strip_inlines(strippedLine)
 
         # Is this line the start of a routine?
-        routineStartMatch = self._detect_routine_start(line)
+        routineStartMatch = self._detect_routine_start(line, indentDepth)
         if self._current_routine_ended(line, routineStartMatch, indentDepth):
             self._save_routine_info(analysis, self._activeBlock)
             self._foundFirstRoutineSinceTransition = True
@@ -845,7 +847,7 @@ class Code( _searchMixin, NBNC ):
                                 self.currentRoutine['RegEx'][0][:40], self.currentRoutine['Name']))
             else:
                 if self._logLevel:
-                    log.code(1, "RoutineEnd({})=>  {}".format(
+                    log.code(1, "RoutineEndIndent({})=>  {}".format(
                                 self.currentRoutine['LineNum'], self.currentRoutine['Line']))
 
         # If there are decision matches for the line
